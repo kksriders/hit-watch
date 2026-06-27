@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="ja"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>競合ヒット動画ウォッチ</title>
+<style>
+*{box-sizing:border-box}body{margin:0;background:#0f1419;color:#e6edf3;font-family:-apple-system,'Segoe UI',Roboto,'Hiragino Sans','Noto Sans JP',sans-serif;font-size:14px}
+a{color:inherit}
+header{padding:16px 22px;border-bottom:1px solid #2a333d;position:sticky;top:0;background:#0f1419;z-index:20}
+h1{margin:0 0 4px;font-size:19px}.sub{color:#8b98a5;font-size:12.5px}
+.kpis{display:flex;gap:10px;flex-wrap:wrap;padding:12px 22px 4px}
+.kpi{background:#1a2129;border:1px solid #2a333d;border-radius:10px;padding:10px 16px;min-width:110px}
+.kpi .v{font-size:23px;font-weight:700}.kpi .l{color:#8b98a5;font-size:11.5px;margin-top:2px}
+.tabs{display:flex;gap:8px;padding:6px 22px 10px;flex-wrap:wrap}
+.tab{background:#1a2129;border:1px solid #2a333d;color:#e6edf3;padding:7px 14px;border-radius:8px;cursor:pointer;font-size:13px}
+.tab.active{background:#4493f8;border-color:#4493f8;color:#fff}
+.wrap{padding:0 22px 50px}
+input.search{width:100%;max-width:380px;padding:9px 12px;margin:4px 0 12px;background:#1a2129;border:1px solid #2a333d;border-radius:8px;color:#e6edf3}
+.note{color:#8b98a5;font-size:12px;margin:6px 0 12px}
+table{width:100%;border-collapse:collapse;background:#1a2129;border:1px solid #2a333d;border-radius:10px;overflow:hidden}
+th,td{padding:8px 10px;border-bottom:1px solid #2a333d;text-align:left;vertical-align:middle}
+th{background:#10161d;color:#8b98a5;font-weight:600;cursor:pointer;white-space:nowrap;font-size:12.5px}
+td.n{text-align:right;font-variant-numeric:tabular-nums;white-space:nowrap}
+img.th{width:120px;height:67px;object-fit:cover;border-radius:6px;display:block;background:#10161d}
+img.ic{width:34px;height:34px;border-radius:50%;background:#10161d}
+.chcell{display:flex;align-items:center;gap:8px;min-width:160px}.chcell a{font-weight:600;text-decoration:none}.chcell a:hover{color:#4493f8;text-decoration:underline}
+td.t{max-width:460px}td.t a{text-decoration:none}td.t a:hover{color:#4493f8;text-decoration:underline}
+.b{font-size:11px;padding:2px 8px;border-radius:999px;white-space:nowrap}.b.buzz{background:#f8514922;color:#ff7b72;border:1px solid #f8514955}.b.hit{background:#d2992222;color:#e3b341;border:1px solid #d2992255}
+.hidden{display:none}
+.ch{background:#1a2129;border:1px solid #2a333d;border-radius:12px;margin:0 0 16px;overflow:hidden}
+.chh{display:flex;align-items:center;gap:12px;padding:12px 16px;border-bottom:1px solid #2a333d;background:#10161d}.chh img{width:44px;height:44px;border-radius:50%;background:#1a2129}
+.chh .nm{font-size:16px;font-weight:700;text-decoration:none}.chh .nm:hover{color:#4493f8;text-decoration:underline}.chh .meta{color:#8b98a5;font-size:12px;margin-top:2px}.rank{margin-left:auto;color:#8b98a5;font-size:12px;white-space:nowrap}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(190px,1fr));gap:12px;padding:14px 16px}
+.v{text-decoration:none;display:block}.v img{width:100%;aspect-ratio:16/9;object-fit:cover;border-radius:8px;background:#10161d}
+.v .ti{font-size:12.5px;line-height:1.35;margin:6px 2px 2px;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}.v:hover .ti{color:#4493f8}.v .mt{color:#8b98a5;font-size:11.5px;margin:0 2px}
+.num{display:inline-block;background:#4493f8;color:#fff;font-size:11px;font-weight:700;border-radius:5px;padding:1px 6px;margin-right:5px}
+#msg{padding:40px 22px;color:#8b98a5}
+</style></head><body>
+<header>
+  <h1>競合ヒット動画ウォッチ</h1>
+  <div class="sub" id="sub">読み込み中…</div>
+</header>
+<div class="kpis" id="kpis"></div>
+<div class="tabs">
+  <button class="tab active" data-v="stk" onclick="setView('stk',this)">拡散率ランキング</button>
+  <button class="tab" data-v="new" onclick="setView('new',this)">新しい順</button>
+  <button class="tab" data-v="top" onclick="setView('top',this)">各ch 歴代トップ10</button>
+</div>
+<div class="wrap">
+  <input class="search" id="q" placeholder="チャンネル・タイトルで絞り込み…" oninput="filt()">
+  <div class="note" id="note"></div>
+  <div id="msg">データを読み込んでいます…</div>
+  <div id="viewStk" class="hidden"></div>
+  <div id="viewNew" class="hidden"></div>
+  <div id="viewTop" class="hidden"></div>
+</div>
+<script>
+var DATA=null, CUR='stk';
+function esc(s){return String(s==null?'':s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');}
+function thumb(id){return 'https://i.ytimg.com/vi/'+id+'/mqdefault.jpg';}
+function vurl(id){return 'https://www.youtube.com/watch?v='+id;}
+function curl(uc){return 'https://www.youtube.com/channel/'+uc;}
+function nf(n){return (n||0).toLocaleString();}
+function badge(h){return (h.st>=10||h.stk>=10)?'<span class="b buzz">バズ</span>':'<span class="b hit">ヒット</span>';}
+function chCell(h){return '<div class="chcell"><img class="ic" loading="lazy" referrerpolicy="no-referrer" src="'+h.icon+'"><a href="'+curl(h.uc)+'" target="_blank">'+esc(h.title)+'</a></div>';}
+function hitTable(rows){
+  var head='<table><thead><tr><th>サムネ</th><th onclick="sortBy(1,0)">チャンネル</th><th onclick="sortBy(2,0)">タイトル</th><th onclick="sortBy(3,1)">公開日</th><th onclick="sortBy(4,1)">再生数</th><th onclick="sortBy(5,1)">登録者</th><th onclick="sortBy(6,1)">中央値</th><th onclick="sortBy(7,1)">ST</th><th onclick="sortBy(8,1)">STK</th><th>判定</th></tr></thead><tbody>';
+  var body=rows.map(function(h){return '<tr><td><a href="'+vurl(h.id)+'" target="_blank"><img class="th" loading="lazy" referrerpolicy="no-referrer" src="'+thumb(h.id)+'"></a></td><td>'+chCell(h)+'</td><td class="t"><a href="'+vurl(h.id)+'" target="_blank">'+esc(h.t)+'</a></td><td class="n">'+h.d+'</td><td class="n">'+nf(h.v)+'</td><td class="n">'+nf(h.subs)+'</td><td class="n">'+nf(Math.round(h.median))+'</td><td class="n">'+(h.st).toFixed(1)+'</td><td class="n">'+(h.stk).toFixed(1)+'</td><td>'+badge(h)+'</td></tr>';}).join('');
+  return head+body+'</tbody></table>';
+}
+function topHtml(channels){
+  var chs=channels.slice().sort(function(a,b){return b.subs-a.subs;});
+  return chs.map(function(c,idx){
+    var cards=c.top10.map(function(v,i){return '<a class="v" href="'+vurl(v.id)+'" target="_blank"><img loading="lazy" referrerpolicy="no-referrer" src="'+thumb(v.id)+'"><div class="ti"><span class="num">'+(i+1)+'</span>'+esc(v.t)+'</div><div class="mt">'+nf(v.v)+' 回 ・ '+v.d+'</div></a>';}).join('');
+    return '<div class="ch" data-name="'+esc(c.title).toLowerCase()+'"><div class="chh"><img loading="lazy" referrerpolicy="no-referrer" src="'+c.icon+'"><div><a class="nm" href="'+curl(c.uc)+'" target="_blank">'+esc(c.title)+'</a><div class="meta">登録 '+nf(c.subs)+'人 ・ 最終投稿(横動画) '+c.lastDate+'</div></div><div class="rank">#'+(idx+1)+' 登録者順</div></div><div class="grid">'+cards+'</div></div>';
+  }).join('');
+}
+function render(){
+  var V=DATA;
+  document.getElementById('msg').classList.add('hidden');
+  var buzz=V.hits.filter(function(h){return h.st>=10||h.stk>=10;}).length;
+  document.getElementById('sub').textContent='最終更新 '+V.meta.date+'／監視 '+V.channels.length+'ch（縦＝ショート除外・横動画のみ）／ヒット定義: ST≧5 または STK≧5';
+  document.getElementById('kpis').innerHTML='<div class="kpi"><div class="v">'+V.hits.length+'</div><div class="l">ヒット動画(拡散率5+)</div></div><div class="kpi"><div class="v">'+buzz+'</div><div class="l">うちバズ(10+)</div></div><div class="kpi"><div class="v">'+V.channels.length+'</div><div class="l">監視チャンネル</div></div>';
+  var byStk=V.hits.slice().sort(function(a,b){return b.stk-a.stk;});
+  var byNew=V.hits.slice().sort(function(a,b){return (b.d<a.d?-1:b.d>a.d?1:0);});
+  document.getElementById('viewStk').innerHTML=hitTable(byStk);
+  document.getElementById('viewNew').innerHTML=hitTable(byNew);
+  document.getElementById('viewTop').innerHTML=topHtml(V.channels);
+  setView('stk',document.querySelector('.tab'));
+}
+function setView(v,btn){
+  CUR=v;
+  var tabs=document.querySelectorAll('.tab');for(var i=0;i<tabs.length;i++)tabs[i].classList.remove('active');
+  if(btn)btn.classList.add('active');
+  document.getElementById('viewStk').classList.toggle('hidden',v!=='stk');
+  document.getElementById('viewNew').classList.toggle('hidden',v!=='new');
+  document.getElementById('viewTop').classList.toggle('hidden',v!=='top');
+  document.getElementById('note').textContent = v==='top' ? '各チャンネルの歴代再生数トップ10（横動画のみ）。サムネ／チャンネル名タップで開けます。' : 'サムネ／チャンネル名タップで動画・チャンネルへ。ST=再生数÷登録者数、STK=再生数÷直近20本(横動画)中央値。ヘッダクリックで並べ替え。';
+  filt();
+}
+function filt(){
+  var q=document.getElementById('q').value.toLowerCase();
+  if(CUR==='top'){
+    var chs=document.querySelectorAll('#viewTop .ch');
+    for(var i=0;i<chs.length;i++){chs[i].style.display=chs[i].getAttribute('data-name').indexOf(q)>=0?'':'none';}
+  }else{
+    var id=CUR==='stk'?'viewStk':'viewNew';
+    var rows=document.querySelectorAll('#'+id+' tbody tr');
+    for(var j=0;j<rows.length;j++){rows[j].style.display=rows[j].innerText.toLowerCase().indexOf(q)>=0?'':'none';}
+  }
+}
+function sortBy(i,num){
+  var id=CUR==='stk'?'viewStk':'viewNew';
+  var tb=document.querySelector('#'+id+' tbody');if(!tb)return;
+  var rs=[].slice.call(tb.querySelectorAll('tr'));
+  rs.sort(function(a,b){var x=a.cells[i].innerText.replace(/[, ]/g,''),y=b.cells[i].innerText.replace(/[, ]/g,'');if(num)return parseFloat(y||0)-parseFloat(x||0);return x<y?1:-1;});
+  rs.forEach(function(r){tb.appendChild(r);});
+}
+fetch('./data.json?_='+Date.now()).then(function(r){if(!r.ok)throw new Error('HTTP '+r.status);return r.json();}).then(function(j){DATA=j;render();}).catch(function(e){document.getElementById('msg').textContent='データ(data.json)をまだ読み込めません。次回の自動巡回でデータが配置されると表示されます。（'+e.message+'）';});
+</script></body></html>
