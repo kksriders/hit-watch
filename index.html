@@ -42,7 +42,8 @@ td.t{max-width:460px}td.t a{text-decoration:none}td.t a:hover{color:#4493f8;text
 <div class="tabs">
   <button class="tab active" data-v="stk" onclick="setView('stk',this)">拡散率ランキング</button>
   <button class="tab" data-v="new" onclick="setView('new',this)">新しい順</button>
-  <button class="tab" data-v="top" onclick="setView('top',this)">各ch 歴代トップ10</button>
+  <button class="tab" data-v="year" onclick="setView('year',this)">直近1年トップ10</button>
+  <button class="tab" data-v="all" onclick="setView('all',this)">各ch 歴代トップ10</button>
 </div>
 <div class="wrap">
   <input class="search" id="q" placeholder="チャンネル・タイトルで絞り込み…" oninput="filt()">
@@ -50,7 +51,8 @@ td.t{max-width:460px}td.t a{text-decoration:none}td.t a:hover{color:#4493f8;text
   <div id="msg">データを読み込んでいます…</div>
   <div id="viewStk" class="hidden"></div>
   <div id="viewNew" class="hidden"></div>
-  <div id="viewTop" class="hidden"></div>
+  <div id="viewYear" class="hidden"></div>
+  <div id="viewAll" class="hidden"></div>
 </div>
 <script>
 var DATA=null, CUR='stk';
@@ -66,12 +68,18 @@ function hitTable(rows){
   var body=rows.map(function(h){return '<tr><td><a href="'+vurl(h.id)+'" target="_blank"><img class="th" loading="lazy" referrerpolicy="no-referrer" src="'+thumb(h.id)+'"></a></td><td>'+chCell(h)+'</td><td class="t"><a href="'+vurl(h.id)+'" target="_blank">'+esc(h.t)+'</a></td><td class="n">'+h.d+'</td><td class="n">'+nf(h.v)+'</td><td class="n">'+nf(h.subs)+'</td><td class="n">'+nf(Math.round(h.median))+'</td><td class="n">'+(h.st).toFixed(1)+'</td><td class="n">'+(h.stk).toFixed(1)+'</td><td>'+badge(h)+'</td></tr>';}).join('');
   return head+body+'</tbody></table>';
 }
-function topHtml(channels){
+function topHtml(channels, field){
   var chs=channels.slice().sort(function(a,b){return b.subs-a.subs;});
-  return chs.map(function(c,idx){
-    var cards=c.top10.map(function(v,i){return '<a class="v" href="'+vurl(v.id)+'" target="_blank"><img loading="lazy" referrerpolicy="no-referrer" src="'+thumb(v.id)+'"><div class="ti"><span class="num">'+(i+1)+'</span>'+esc(v.t)+'</div><div class="mt">'+nf(v.v)+' 回 ・ '+v.d+'</div></a>';}).join('');
+  var any=false;
+  var html=chs.map(function(c,idx){
+    var list = c[field] || (field==='top10_year'? c.top10 : null) || [];
+    if(!list.length) return '';
+    any=true;
+    var cards=list.map(function(v,i){return '<a class="v" href="'+vurl(v.id)+'" target="_blank"><img loading="lazy" referrerpolicy="no-referrer" src="'+thumb(v.id)+'"><div class="ti"><span class="num">'+(i+1)+'</span>'+esc(v.t)+'</div><div class="mt">'+nf(v.v)+' 回 ・ '+v.d+'</div></a>';}).join('');
     return '<div class="ch" data-name="'+esc(c.title).toLowerCase()+'"><div class="chh"><img loading="lazy" referrerpolicy="no-referrer" src="'+c.icon+'"><div><a class="nm" href="'+curl(c.uc)+'" target="_blank">'+esc(c.title)+'</a><div class="meta">登録 '+nf(c.subs)+'人 ・ 最終投稿(横動画) '+c.lastDate+'</div></div><div class="rank">#'+(idx+1)+' 登録者順</div></div><div class="grid">'+cards+'</div></div>';
   }).join('');
+  if(!any) return '<div class="note">この一覧は次回の自動更新（毎週月曜）で表示されます。</div>';
+  return html;
 }
 function render(){
   var V=DATA;
@@ -83,7 +91,8 @@ function render(){
   var byNew=V.hits.slice().sort(function(a,b){return (b.d<a.d?-1:b.d>a.d?1:0);});
   document.getElementById('viewStk').innerHTML=hitTable(byStk);
   document.getElementById('viewNew').innerHTML=hitTable(byNew);
-  document.getElementById('viewTop').innerHTML=topHtml(V.channels);
+  document.getElementById('viewYear').innerHTML=topHtml(V.channels,'top10_year');
+  document.getElementById('viewAll').innerHTML=topHtml(V.channels,'top10_all');
   setView('stk',document.querySelector('.tab'));
 }
 function setView(v,btn){
@@ -92,14 +101,22 @@ function setView(v,btn){
   if(btn)btn.classList.add('active');
   document.getElementById('viewStk').classList.toggle('hidden',v!=='stk');
   document.getElementById('viewNew').classList.toggle('hidden',v!=='new');
-  document.getElementById('viewTop').classList.toggle('hidden',v!=='top');
-  document.getElementById('note').textContent = v==='top' ? '各チャンネルの歴代再生数トップ10（5分以上の動画のみ）。サムネ／チャンネル名タップで開けます。' : 'サムネ／チャンネル名タップで動画・チャンネルへ。ST=再生数÷登録者数、STK=再生数÷直近20本(5分以上)中央値。ヘッダクリックで並べ替え。';
+  document.getElementById('viewYear').classList.toggle('hidden',v!=='year');
+  document.getElementById('viewAll').classList.toggle('hidden',v!=='all');
+  var notes={
+    stk:'サムネ／チャンネル名タップで動画・チャンネルへ。ST=再生数÷登録者数、STK=再生数÷直近20本(5分以上)中央値。ヘッダクリックで並べ替え。',
+    'new':'サムネ／チャンネル名タップで動画・チャンネルへ。ST=再生数÷登録者数、STK=再生数÷直近20本(5分以上)中央値。ヘッダクリックで並べ替え。',
+    year:'各チャンネルの直近1年（公開日が今日から365日以内）の再生数トップ10（5分以上の動画のみ）。サムネ／チャンネル名タップで開けます。',
+    all:'各チャンネルの開設以来・全期間の再生数トップ10（5分以上の動画のみ）。サムネ／チャンネル名タップで開けます。'
+  };
+  document.getElementById('note').textContent = notes[v]||'';
   filt();
 }
 function filt(){
   var q=document.getElementById('q').value.toLowerCase();
-  if(CUR==='top'){
-    var chs=document.querySelectorAll('#viewTop .ch');
+  if(CUR==='year'||CUR==='all'){
+    var cont=CUR==='year'?'viewYear':'viewAll';
+    var chs=document.querySelectorAll('#'+cont+' .ch');
     for(var i=0;i<chs.length;i++){chs[i].style.display=chs[i].getAttribute('data-name').indexOf(q)>=0?'':'none';}
   }else{
     var id=CUR==='stk'?'viewStk':'viewNew';
