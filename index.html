@@ -59,6 +59,19 @@ h1{font-size:20px;margin-bottom:4px}
 .hitrow img{width:18px;height:18px;border-radius:50%}
 details.removed{margin-top:24px;color:var(--tx2);font-size:12px}
 details.removed li{margin-left:20px}
+/* チャンネル削除 */
+.delbtn{margin-left:10px;flex:none;background:none;border:1px solid var(--line);border-radius:8px;color:var(--tx2);cursor:pointer;padding:4px 9px;font-size:13px;line-height:1}
+.delbtn:hover{border-color:#dc2626;color:#f87171}
+.modal{display:none;position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:50;align-items:center;justify-content:center}
+.modal.show{display:flex}
+.mbox{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:20px;max-width:440px;width:92%}
+.mbox h2{font-size:15px;margin-bottom:10px;line-height:1.5}
+.mbox p{color:var(--tx2);font-size:12.5px;margin-bottom:16px}
+.mrow{display:flex;gap:8px;justify-content:flex-end}
+.mrow button{border:0;border-radius:8px;padding:9px 16px;font-size:13px;cursor:pointer}
+.mcancel{background:var(--card2);border:1px solid var(--line) !important;color:var(--tx)}
+.mdel{background:#dc2626;color:#fff}
+.mdel:disabled{opacity:.6;cursor:default}
 </style>
 </head>
 <body>
@@ -73,7 +86,7 @@ details.removed li{margin-left:20px}
     <button class="gear" onclick="document.getElementById('tokpanel').classList.toggle('show')">&#9881; 設定</button>
   </div>
   <div class="addstatus" id="addstatus"></div>
-  <div class="addhint">ここに追加したチャンネルは、次回の週次巡回（毎週月曜朝）から自動的に監視対象になります。</div>
+  <div class="addhint">ここに追加したチャンネルは、次回の週次巡回（毎週月曜朝）から自動的に監視対象になります。不要なチャンネルは各チャンネル名の右の「削除」ボタンから外せます。</div>
   <div class="pendlist" id="pendlist"></div>
   <div class="tokpanel" id="tokpanel">
     <div class="note">初回のみ: GitHubトークン（hit-watch-updater）を登録してください。このブラウザ内にのみ保存されます。</div>
@@ -102,9 +115,21 @@ details.removed li{margin-left:20px}
 <details class="removed" id="removedbox"></details>
 </div>
 
+<div class="modal" id="delmodal" onclick="if(event.target===this)closeDel()">
+  <div class="mbox">
+    <h2 id="deltitle">チャンネルを削除しますか？</h2>
+    <p>このチャンネルを監視対象から削除します。サイトの表示からすぐに消え、以後の巡回からも恒久的に除外されます。<br><br>元に戻したいときは、上の追加ウィジェットから再追加すれば次回の週次巡回で復活します。</p>
+    <div class="mrow">
+      <button class="mcancel" onclick="closeDel()">キャンセル</button>
+      <button class="mdel" id="delgo" onclick="doDelete()">削除する</button>
+    </div>
+  </div>
+</div>
+
 <script>
-const OWNER='kksriders', REPO='hit-watch', PENDING='pending_channels.json';
+const OWNER='kksriders', REPO='hit-watch', PENDING='pending_channels.json', REMOVED='removed_channels.json', EXTRA='channels_extra.json';
 const API='https://api.github.com/repos/'+OWNER+'/'+REPO+'/contents/';
+const APIROOT='https://api.github.com/repos/'+OWNER+'/'+REPO+'/';
 let D=null, TAB='year', DAYS=365;
 const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const num=n=>Number(n||0).toLocaleString('ja-JP');
@@ -115,10 +140,12 @@ const churl=uc=>'https://www.youtube.com/channel/'+uc;
 async function load(){
   try{
     D=await fetch('data.json?v='+Date.now()).then(r=>r.json());
-    const m=D.meta||{};
-    document.getElementById('meta').textContent='最終更新 '+(m.date||'?')+'／監視 '+D.channels.length+'ch（5分未満の動画は除外・長尺のみ）／ヒット定義: ST≧5 または STK≧5'+(m.cutoff365?('／直近1年=公開日'+m.cutoff365+'以降'):'');
-    renderRemoved(); render(); loadPending();
+    setMeta(); renderRemoved(); render(); loadPending();
   }catch(e){ document.getElementById('meta').textContent='data.json の読み込みに失敗しました: '+e.message; }
+}
+function setMeta(){
+  const m=D.meta||{};
+  document.getElementById('meta').textContent='最終更新 '+(m.date||'?')+'／監視 '+D.channels.length+'ch（5分未満の動画は除外・長尺のみ）／ヒット定義: ST≧5 または STK≧5'+(m.cutoff365?('／直近1年=公開日'+m.cutoff365+'以降'):'');
 }
 function setTab(el){ document.querySelectorAll('.tab').forEach(t=>t.classList.remove('on')); el.classList.add('on'); TAB=el.dataset.v; render(); }
 function setDays(el){ document.querySelectorAll('.chip').forEach(c=>c.classList.remove('on')); el.classList.add('on'); DAYS=+el.dataset.days; render(); }
@@ -145,7 +172,8 @@ function render(){
       html+='<div class="chsec"><div class="chhead"><img src="'+esc(c.icon)+'" loading="lazy" alt="">'
         +'<div><a href="'+churl(c.uc)+'" target="_blank" rel="noopener">'+esc(c.title)+'</a>'
         +'<div class="chsub">登録 '+num(c.subs)+'人 ・ 最終投稿(横動画) '+esc(c.lastDate||'-')+'</div></div>'
-        +'<div class="chrank">#'+rank+' 登録者順</div></div>';
+        +'<div class="chrank">#'+rank+' 登録者順</div>'
+        +'<button class="delbtn" title="このチャンネルを監視から削除" onclick="askDelete(\''+esc(c.uc)+'\')">&#128465; 削除</button></div>';
       if(!vids.length){ html+='<div class="empty">データなし（次回更新をお待ちください）</div></div>'; continue; }
       html+='<div class="grid">'+vids.map((x,i)=>vcard(x,i+1)).join('')+'</div></div>';
     }
@@ -182,8 +210,86 @@ function renderRemoved(){
     +r.map(x=>'<li>'+esc(x.name||x.slug)+'（最終長尺投稿: '+esc(x.lastDate||'不明')+'）</li>').join('')+'</ul>';
 }
 
-/* ===== チャンネル追加ウィジェット ===== */
+/* ===== GitHub API 共通ヘルパー ===== */
 const tok=()=>localStorage.getItem('hw_gh_token')||'';
+async function ghGet(path){
+  const r=await fetch(API+path+'?ref=main&ts='+Date.now(),{cache:'no-store',headers:tok()?{Authorization:'Bearer '+tok()}:{}});
+  if(r.status===404) return {sha:null,data:null};
+  if(!r.ok) throw new Error('取得失敗 HTTP '+r.status);
+  const j=await r.json();
+  const bin=atob(j.content.replace(/\n/g,''));
+  const u8=new Uint8Array(bin.length); for(let i=0;i<bin.length;i++)u8[i]=bin.charCodeAt(i);
+  return {sha:j.sha,data:JSON.parse(new TextDecoder('utf-8').decode(u8))};
+}
+async function ghGetBig(path){
+  const h={Authorization:'Bearer '+tok(),Accept:'application/vnd.github+json'};
+  const t=await fetch(APIROOT+'git/trees/main?ts='+Date.now(),{cache:'no-store',headers:h}).then(r=>{if(!r.ok)throw new Error('tree取得失敗 HTTP '+r.status);return r.json();});
+  const e=(t.tree||[]).find(x=>x.path===path);
+  if(!e) throw new Error(path+' が見つかりません');
+  const b=await fetch(APIROOT+'git/blobs/'+e.sha,{cache:'no-store',headers:h}).then(r=>{if(!r.ok)throw new Error('blob取得失敗 HTTP '+r.status);return r.json();});
+  const bin=atob((b.content||'').replace(/\n/g,''));
+  const u8=new Uint8Array(bin.length); for(let i=0;i<bin.length;i++)u8[i]=bin.charCodeAt(i);
+  return {sha:e.sha,data:JSON.parse(new TextDecoder('utf-8').decode(u8))};
+}
+async function ghPut(path,obj,sha,msg,pretty){
+  const u8=new TextEncoder().encode(pretty?JSON.stringify(obj,null,1):JSON.stringify(obj));
+  let bin=''; const CH=8192;
+  for(let i=0;i<u8.length;i+=CH) bin+=String.fromCharCode.apply(null,u8.subarray(i,i+CH));
+  const body={message:msg,content:btoa(bin),branch:'main'};
+  if(sha) body.sha=sha;
+  const r=await fetch(API+path,{method:'PUT',headers:{Authorization:'Bearer '+tok(),Accept:'application/vnd.github+json'},body:JSON.stringify(body)});
+  if(!r.ok) throw new Error('書き込み失敗 HTTP '+r.status+(r.status===401||r.status===403?'（トークンを確認してください）':r.status===409?'（更新が競合しました。ページを再読み込みして再試行してください）':''));
+}
+
+/* ===== チャンネル削除 ===== */
+let delTarget=null;
+function askDelete(uc){
+  const c=(D&&D.channels||[]).find(x=>x.uc===uc); if(!c) return;
+  if(!tok()){ document.getElementById('tokpanel').classList.add('show'); tokState(); setSt('削除にはトークンの登録が必要です（⚙設定）','ng'); window.scrollTo({top:0,behavior:'smooth'}); return; }
+  delTarget=c;
+  document.getElementById('deltitle').textContent='「'+c.title+'」を監視対象から削除しますか？';
+  document.getElementById('delmodal').classList.add('show');
+}
+function closeDel(){ delTarget=null; document.getElementById('delmodal').classList.remove('show'); }
+async function doDelete(){
+  if(!delTarget) return;
+  const c=delTarget, btn=document.getElementById('delgo');
+  btn.disabled=true; btn.textContent='削除中…';
+  try{
+    // 1) data.json から即時削除（表示から消す）
+    const big=await ghGetBig('data.json');
+    const before=(big.data.channels||[]).length;
+    big.data.channels=(big.data.channels||[]).filter(x=>x.uc!==c.uc);
+    if(big.data.channels.length!==before-1) throw new Error('対象チャンネルをdata.json内で特定できませんでした（中止）');
+    big.data.hits=(big.data.hits||[]).filter(h=>h.uc?h.uc!==c.uc:h.title!==c.title);
+    big.data.removed=(big.data.removed||[]).filter(x=>x.uc!==c.uc);
+    await ghPut('data.json',big.data,big.sha,'remove channel '+c.title+' via widget',false);
+    // 2) 恒久除外リストに記録（週次・半期の巡回が参照）
+    const rm=await ghGet(REMOVED);
+    const list=(rm.data&&rm.data.removed)||[];
+    if(!list.some(x=>x.uc===c.uc)) list.push({uc:c.uc,title:c.title,removed:new Date().toISOString().slice(0,10)});
+    await ghPut(REMOVED,{removed:list},rm.sha,'add '+c.title+' to removed list via widget',true);
+    // 3) ウィジェット追加分リストに居れば外す
+    try{
+      const ex=await ghGet(EXTRA);
+      if(ex.data&&Array.isArray(ex.data.channels)){
+        const b=ex.data.channels.length;
+        ex.data.channels=ex.data.channels.filter(x=>JSON.stringify(x).indexOf(c.uc)<0);
+        if(ex.data.channels.length!==b) await ghPut(EXTRA,ex.data,ex.sha,'remove '+c.title+' from extra via widget',true);
+      }
+    }catch(e){/* extraの掃除は失敗しても除外リストが効くので続行 */}
+    // 4) 画面を即時更新
+    D.channels=D.channels.filter(x=>x.uc!==c.uc);
+    D.hits=(D.hits||[]).filter(h=>h.uc?h.uc!==c.uc:h.title!==c.title);
+    D.removed=(D.removed||[]).filter(x=>x.uc!==c.uc);
+    closeDel(); setMeta(); renderRemoved(); render();
+    setSt('「'+c.title+'」を削除しました。以後の巡回からも恒久的に除外されます','ok');
+    window.scrollTo({top:0,behavior:'smooth'});
+  }catch(e){ setSt('削除エラー: '+e.message,'ng'); closeDel(); window.scrollTo({top:0,behavior:'smooth'}); }
+  finally{ btn.disabled=false; btn.textContent='削除する'; }
+}
+
+/* ===== チャンネル追加ウィジェット ===== */
 function saveToken(){ const t=document.getElementById('tokinput').value.trim(); if(!t){setSt('トークンが空です','ng');return;} localStorage.setItem('hw_gh_token',t); document.getElementById('tokinput').value=''; tokState(); setSt('トークンを保存しました','ok'); }
 function clearToken(){ localStorage.removeItem('hw_gh_token'); tokState(); setSt('トークンを削除しました','ok'); }
 function tokState(){ document.getElementById('tokstate').textContent=tok()?'登録状態: 登録済み':'登録状態: 未登録'; }
@@ -197,17 +303,11 @@ function normUrl(s){
   try{ const u=new URL(s); if(!/(^|\.)youtube\.com$|(^|\.)youtu\.be$/.test(u.hostname)) return null; return u.href; }catch(e){ return null; }
 }
 async function getPending(){
-  const r=await fetch(API+PENDING+'?ref=main&ts='+Date.now(),{headers:tok()?{Authorization:'Bearer '+tok()}:{}});
-  if(r.status===404) return {sha:null,data:{pending:[]}};
-  if(!r.ok) throw new Error('取得失敗 HTTP '+r.status);
-  const j=await r.json();
-  return {sha:j.sha,data:JSON.parse(decodeURIComponent(escape(atob(j.content.replace(/\n/g,'')))))};
+  const p=await ghGet(PENDING);
+  return {sha:p.sha,data:p.data||{pending:[]}};
 }
 async function putPending(p){
-  const body={message:'update pending channels via widget',content:btoa(unescape(encodeURIComponent(JSON.stringify(p.data,null,1)))),branch:'main'};
-  if(p.sha) body.sha=p.sha;
-  const r=await fetch(API+PENDING,{method:'PUT',headers:{Authorization:'Bearer '+tok(),Accept:'application/vnd.github+json'},body:JSON.stringify(body)});
-  if(!r.ok) throw new Error('書き込み失敗 HTTP '+r.status+(r.status===401||r.status===403?'（トークンを確認してください）':''));
+  await ghPut(PENDING,p.data,p.sha,'update pending channels via widget',true);
 }
 async function addChannel(){
   const raw=document.getElementById('addurl').value;
