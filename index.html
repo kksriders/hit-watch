@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>ç«¶åˆãƒ’ãƒƒãƒˆå‹•ç”»ã‚¦ã‚©ãƒƒãƒ</title>
+<title>競合ヒット動画ウォッチ</title>
 <style>
 :root{--bg:#0f1115;--card:#181b22;--card2:#1f232c;--tx:#e8eaf0;--tx2:#9aa1ad;--acc:#3b82f6;--accbg:#1d3a6e;--line:#2a2f3a;--hit:#f59e0b}
 *{box-sizing:border-box;margin:0;padding:0}
@@ -11,7 +11,7 @@ body{background:var(--bg);color:var(--tx);font-family:-apple-system,BlinkMacSyst
 .wrap{max-width:1280px;margin:0 auto;padding:20px 16px 60px}
 h1{font-size:20px;margin-bottom:4px}
 .meta{color:var(--tx2);font-size:12px;margin-bottom:14px}
-/* ãƒãƒ£ãƒ³ãƒãƒ«è¿½åŠ ã‚¦ã‚£ã‚¸ã‚§ãƒƒãƒˆ */
+/* チャンネル追加ウィジェット */
 .addbox{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:12px;margin-bottom:16px}
 .addrow{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
 .addrow input[type=text]{flex:1;min-width:240px;background:var(--card2);border:1px solid var(--line);border-radius:8px;padding:8px 10px;color:var(--tx);font-size:13px}
@@ -28,7 +28,7 @@ h1{font-size:20px;margin-bottom:4px}
 .pend{background:var(--card2);border:1px solid var(--line);border-radius:14px;padding:3px 10px;font-size:11px;color:var(--tx2);display:flex;align-items:center;gap:6px;max-width:340px}
 .pend span{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .pend b{cursor:pointer;color:#f87171;font-weight:400}
-/* ã‚¿ãƒ–ãƒ»ãƒãƒƒãƒ— */
+/* タブ・チップ */
 .tabs{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:10px}
 .tab{background:var(--card);border:1px solid var(--line);border-radius:8px;padding:8px 14px;cursor:pointer;color:var(--tx);font-size:13px}
 .tab.on{background:var(--acc);border-color:var(--acc)}
@@ -38,7 +38,7 @@ h1{font-size:20px;margin-bottom:4px}
 .chip.on{background:var(--accbg);border-color:var(--acc);color:var(--tx)}
 #q{width:100%;max-width:360px;background:var(--card);border:1px solid var(--line);border-radius:8px;padding:8px 12px;color:var(--tx);font-size:13px;margin-bottom:12px}
 .desc{color:var(--tx2);font-size:12px;margin-bottom:14px}
-/* ãƒãƒ£ãƒ³ãƒãƒ«ã‚»ã‚¯ã‚·ãƒ§ãƒ³ */
+/* チャンネルセクション */
 .chsec{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:14px;margin-bottom:14px}
 .chhead{display:flex;align-items:center;gap:10px;margin-bottom:10px}
 .chhead img{width:40px;height:40px;border-radius:50%}
@@ -63,40 +63,40 @@ details.removed li{margin-left:20px}
 </head>
 <body>
 <div class="wrap">
-<h1>ç«¶åˆãƒ’ãƒƒãƒˆå‹•ç”»ã‚¦ã‚©ãƒƒãƒ</h1>
-<div class="meta" id="meta">èª­ã¿è¾¼ã¿ä¸­â€¦</div>
+<h1>競合ヒット動画ウォッチ</h1>
+<div class="meta" id="meta">読み込み中…</div>
 
 <div class="addbox">
   <div class="addrow">
-    <input type="text" id="addurl" placeholder="ã‚¦ã‚©ãƒƒãƒã«è¿½åŠ : ãƒãƒ£ãƒ³ãƒãƒ«URLãƒ»@ãƒãƒ³ãƒ‰ãƒ«ãƒ»å‹•ç”»URL ã‚’è²¼ã‚‹">
-    <button onclick="addChannel()">è¿½åŠ </button>
-    <button class="gear" onclick="document.getElementById('tokpanel').classList.toggle('show')">&#9881; è¨­å®š</button>
+    <input type="text" id="addurl" placeholder="ウォッチに追加: チャンネルURL・@ハンドル・動画URL を貼る">
+    <button onclick="addChannel()">追加</button>
+    <button class="gear" onclick="document.getElementById('tokpanel').classList.toggle('show')">&#9881; 設定</button>
   </div>
   <div class="addstatus" id="addstatus"></div>
-  <div class="addhint">ã“ã“ã«è¿½åŠ ã—ãŸãƒãƒ£ãƒ³ãƒãƒ«ã¯ã€æ¬¡å›žã®é€±æ¬¡å·¡å›žï¼ˆæ¯Žé€±æœˆæ›œæœï¼‰ã‹ã‚‰è‡ªå‹•çš„ã«ç›£è¦–å¯¾è±¡ã«ãªã‚Šã¾ã™ã€‚</div>
+  <div class="addhint">ここに追加したチャンネルは、次回の週次巡回（毎週月曜朝）から自動的に監視対象になります。</div>
   <div class="pendlist" id="pendlist"></div>
   <div class="tokpanel" id="tokpanel">
-    <div class="note">åˆå›žã®ã¿: GitHubãƒˆãƒ¼ã‚¯ãƒ³ï¼ˆhit-watch-updaterï¼‰ã‚’ç™»éŒ²ã—ã¦ãã ã•ã„ã€‚ã“ã®ãƒ–ãƒ©ã‚¦ã‚¶å†…ã«ã®ã¿ä¿å­˜ã•ã‚Œã¾ã™ã€‚</div>
-    <input type="password" id="tokinput" placeholder="github_pat_... ã¾ãŸã¯ ghp_...">
+    <div class="note">初回のみ: GitHubトークン（hit-watch-updater）を登録してください。このブラウザ内にのみ保存されます。</div>
+    <input type="password" id="tokinput" placeholder="github_pat_... または ghp_...">
     <div class="addrow">
-      <button onclick="saveToken()">ãƒˆãƒ¼ã‚¯ãƒ³ã‚’ä¿å­˜</button>
-      <button class="gear" onclick="clearToken()">å‰Šé™¤</button>
+      <button onclick="saveToken()">トークンを保存</button>
+      <button class="gear" onclick="clearToken()">削除</button>
     </div>
     <div class="note" id="tokstate"></div>
   </div>
 </div>
 
 <div class="tabs">
-  <div class="tab" data-v="stk" onclick="setTab(this)">æ‹¡æ•£çŽ‡ãƒ©ãƒ³ã‚­ãƒ³ã‚°</div>
-  <div class="tab" data-v="new" onclick="setTab(this)">æ–°ã—ã„é †</div>
-  <div class="tab on" data-v="year" onclick="setTab(this)">ç›´è¿‘1å¹´ãƒˆãƒƒãƒ—10</div>
-  <div class="tab" data-v="all" onclick="setTab(this)">å„chæ­´ä»£ãƒˆãƒƒãƒ—10</div>
+  <div class="tab" data-v="stk" onclick="setTab(this)">拡散率ランキング</div>
+  <div class="tab" data-v="new" onclick="setTab(this)">新しい順</div>
+  <div class="tab on" data-v="year" onclick="setTab(this)">直近1年トップ10</div>
+  <div class="tab" data-v="all" onclick="setTab(this)">各ch歴代トップ10</div>
 </div>
 <div class="chips" id="chips">
-  <div class="chip on" data-days="365" onclick="setDays(this)">ç›´è¿‘1å¹´</div>
-  <div class="chip" data-days="30" onclick="setDays(this)">ç›´è¿‘30æ—¥</div>
+  <div class="chip on" data-days="365" onclick="setDays(this)">直近1年</div>
+  <div class="chip" data-days="30" onclick="setDays(this)">直近30日</div>
 </div>
-<input id="q" placeholder="ãƒãƒ£ãƒ³ãƒãƒ«ãƒ»ã‚¿ã‚¤ãƒˆãƒ«ã§çµžã‚Šè¾¼ã¿â€¦" oninput="render()">
+<input id="q" placeholder="チャンネル・タイトルで絞り込み…" oninput="render()">
 <div class="desc" id="desc"></div>
 <div id="view"></div>
 <details class="removed" id="removedbox"></details>
@@ -116,9 +116,9 @@ async function load(){
   try{
     D=await fetch('data.json?v='+Date.now()).then(r=>r.json());
     const m=D.meta||{};
-    document.getElementById('meta').textContent='æœ€çµ‚æ›´æ–° '+(m.date||'?')+'ï¼ç›£è¦– '+D.channels.length+'chï¼ˆ5åˆ†æœªæº€ã®å‹•ç”»ã¯é™¤å¤–ãƒ»é•·å°ºã®ã¿ï¼‰ï¼ãƒ’ãƒƒãƒˆå®šç¾©: STâ‰§5 ã¾ãŸã¯ STKâ‰§5'+(m.cutoff365?('ï¼ç›´è¿‘1å¹´=å…¬é–‹æ—¥'+m.cutoff365+'ä»¥é™'):'');
+    document.getElementById('meta').textContent='最終更新 '+(m.date||'?')+'／監視 '+D.channels.length+'ch（5分未満の動画は除外・長尺のみ）／ヒット定義: ST≧5 または STK≧5'+(m.cutoff365?('／直近1年=公開日'+m.cutoff365+'以降'):'');
     renderRemoved(); render(); loadPending();
-  }catch(e){ document.getElementById('meta').textContent='data.json ã®èª­ã¿è¾¼ã¿ã«å¤±æ•—ã—ã¾ã—ãŸ: '+e.message; }
+  }catch(e){ document.getElementById('meta').textContent='data.json の読み込みに失敗しました: '+e.message; }
 }
 function setTab(el){ document.querySelectorAll('.tab').forEach(t=>t.classList.remove('on')); el.classList.add('on'); TAB=el.dataset.v; render(); }
 function setDays(el){ document.querySelectorAll('.chip').forEach(c=>c.classList.remove('on')); el.classList.add('on'); DAYS=+el.dataset.days; render(); }
@@ -132,61 +132,61 @@ function render(){
   if(TAB==='year'||TAB==='all'){
     const f=TAB==='year'?'top10_year':'top10_all';
     desc.textContent=TAB==='year'
-      ?'å„ãƒãƒ£ãƒ³ãƒãƒ«ã®ç›´è¿‘1å¹´ï¼ˆå…¬é–‹æ—¥ãŒ365æ—¥ä»¥å†…ï¼‰ã®å†ç”Ÿæ•°ãƒˆãƒƒãƒ—10ï¼ˆ5åˆ†ä»¥ä¸Šã®å‹•ç”»ã®ã¿ï¼‰ã€‚ã‚µãƒ ãƒï¼ãƒãƒ£ãƒ³ãƒãƒ«åã‚¿ãƒƒãƒ—ã§é–‹ã‘ã¾ã™ã€‚'
-      :'å„ãƒãƒ£ãƒ³ãƒãƒ«ã®å…¨æœŸé–“ã®å†ç”Ÿæ•°ãƒˆãƒƒãƒ—10ï¼ˆ5åˆ†ä»¥ä¸Šã®å‹•ç”»ã®ã¿ï¼‰ã€‚åŠå¹´ã«1å›žï¼ˆ1/1ãƒ»7/1ï¼‰æ›´æ–°ã€‚';
+      ?'各チャンネルの直近1年（公開日が365日以内）の再生数トップ10（5分以上の動画のみ）。サムネ／チャンネル名タップで開けます。'
+      :'各チャンネルの全期間の再生数トップ10（5分以上の動画のみ）。半年に1回（1/1・7/1）更新。';
     const chs=[...D.channels].sort((a,b)=>b.subs-a.subs);
     let html='', rank=0;
     for(const c of chs){
       rank++;
-      const list=Array.isArray(c[f])?c[f]:[];   // ãƒ•ã‚©ãƒ¼ãƒ«ãƒãƒƒã‚¯ãªã—: top10_year ãŒç„¡ã‘ã‚Œã°ã€Œãƒ‡ãƒ¼ã‚¿ãªã—ã€
+      const list=Array.isArray(c[f])?c[f]:[];   // フォールバックなし: top10_year が無ければ「データなし」
       const nameHit=(c.title||'').toLowerCase().includes(q);
       const vids=q&&!nameHit?list.filter(x=>(x.t||'').toLowerCase().includes(q)):list;
       if(q&&!nameHit&&!vids.length) continue;
       html+='<div class="chsec"><div class="chhead"><img src="'+esc(c.icon)+'" loading="lazy" alt="">'
         +'<div><a href="'+churl(c.uc)+'" target="_blank" rel="noopener">'+esc(c.title)+'</a>'
-        +'<div class="chsub">ç™»éŒ² '+num(c.subs)+'äºº ãƒ» æœ€çµ‚æŠ•ç¨¿(æ¨ªå‹•ç”») '+esc(c.lastDate||'-')+'</div></div>'
-        +'<div class="chrank">#'+rank+' ç™»éŒ²è€…é †</div></div>';
+        +'<div class="chsub">登録 '+num(c.subs)+'人 ・ 最終投稿(横動画) '+esc(c.lastDate||'-')+'</div></div>'
+        +'<div class="chrank">#'+rank+' 登録者順</div></div>';
       if(!vids.length){ html+='<div class="empty">データなし（次回更新をお待ちください）</div></div>'; continue; }
       html+='<div class="grid">'+vids.map((x,i)=>vcard(x,i+1)).join('')+'</div></div>';
     }
-    v.innerHTML=html||'<div class="empty">è©²å½“ãªã—</div>';
+    v.innerHTML=html||'<div class="empty">該当なし</div>';
   }else{
     const cutoff=new Date(Date.now()-DAYS*86400*1000);
     let hits=(D.hits||[]).filter(h=>new Date(h.d)>=cutoff);
     if(q) hits=hits.filter(h=>(h.title||'').toLowerCase().includes(q)||(h.t||'').toLowerCase().includes(q));
     for(const h of hits){ if(h.st==null)h.st=h.subs?h.v/h.subs:0; if(h.stk==null)h.stk=h.median?h.v/h.median:0; }
     hits.sort(TAB==='stk'?(a,b)=>Math.max(b.st,b.stk)-Math.max(a.st,a.stk):(a,b)=>a.d<b.d?1:-1);
-    desc.textContent=(TAB==='stk'?'æ‹¡æ•£çŽ‡ï¼ˆST=å†ç”Ÿæ•°Ã·ç™»éŒ²è€…æ•°ï¼STK=å†ç”Ÿæ•°Ã·ç›´è¿‘20æœ¬ã®ä¸­å¤®å€¤ï¼‰ã®é«˜ã„é †ã€‚':'ãƒ’ãƒƒãƒˆå‹•ç”»ã‚’å…¬é–‹æ—¥ã®æ–°ã—ã„é †ã«è¡¨ç¤ºã€‚')
-      +'å¯¾è±¡: å…¬é–‹æ—¥ãŒç›´è¿‘'+(DAYS===365?'1å¹´':'30æ—¥')+'ä»¥å†…ã®ãƒ’ãƒƒãƒˆå‹•ç”»ï¼ˆSTâ‰§5 ã¾ãŸã¯ STKâ‰§5ï¼‰ã€‚';
+    desc.textContent=(TAB==='stk'?'拡散率（ST=再生数÷登録者数／STK=再生数÷直近20本の中央値）の高い順。':'ヒット動画を公開日の新しい順に表示。')
+      +'対象: 公開日が直近'+(DAYS===365?'1年':'30日')+'以内のヒット動画（ST≧5 または STK≧5）。';
     document.getElementById('view').innerHTML=hits.length
       ?'<div class="grid">'+hits.map((h,i)=>hitcard(h,i+1)).join('')+'</div>'
-      :'<div class="empty">ã“ã®æœŸé–“ã®ãƒ’ãƒƒãƒˆå‹•ç”»ã¯ã‚ã‚Šã¾ã›ã‚“</div>';
+      :'<div class="empty">この期間のヒット動画はありません</div>';
   }
 }
 function vcard(x,n){
   return '<div class="vcard"><a href="'+yurl(x.id)+'" target="_blank" rel="noopener"><img src="'+thumb(x.id)+'" loading="lazy" alt="">'
     +'<div class="vbody"><div class="vtitle"><span class="rankn">'+n+'</span>'+esc(x.t)+'</div>'
-    +'<div class="vstats">'+num(x.v)+' å›ž ãƒ» '+esc(x.d)+'</div></div></a></div>';
+    +'<div class="vstats">'+num(x.v)+' 回 ・ '+esc(x.d)+'</div></div></a></div>';
 }
 function hitcard(h,n){
   const st=(Math.round(h.st*10)/10).toFixed(1), stk=(Math.round(h.stk*10)/10).toFixed(1);
   return '<div class="vcard"><a href="'+yurl(h.id)+'" target="_blank" rel="noopener"><img src="'+thumb(h.id)+'" loading="lazy" alt="">'
     +'<div class="vbody"><div class="vtitle"><span class="rankn">'+n+'</span>'+esc(h.t)+'</div>'
-    +'<div class="vstats">'+num(h.v)+' å›ž ãƒ» '+esc(h.d)+' <span class="stbadge">ST '+st+'</span><span class="stbadge">STK '+stk+'</span></div>'
-    +'<div class="hitrow"><img src="'+esc(h.icon)+'" loading="lazy" alt="">'+esc(h.title)+'ï¼ˆç™»éŒ² '+num(h.subs)+'äººï¼‰</div></div></a></div>';
+    +'<div class="vstats">'+num(h.v)+' 回 ・ '+esc(h.d)+' <span class="stbadge">ST '+st+'</span><span class="stbadge">STK '+stk+'</span></div>'
+    +'<div class="hitrow"><img src="'+esc(h.icon)+'" loading="lazy" alt="">'+esc(h.title)+'（登録 '+num(h.subs)+'人）</div></div></a></div>';
 }
 function renderRemoved(){
   const r=D.removed||[]; const box=document.getElementById('removedbox');
   if(!r.length){box.style.display='none';return;}
-  box.innerHTML='<summary>ä¼‘æ­¢ãƒ»å–å¾—ä¸å¯ãƒãƒ£ãƒ³ãƒãƒ«ï¼ˆ'+r.length+'chï¼‰</summary><ul>'
-    +r.map(x=>'<li>'+esc(x.name||x.slug)+'ï¼ˆæœ€çµ‚é•·å°ºæŠ•ç¨¿: '+esc(x.lastDate||'ä¸æ˜Ž')+'ï¼‰</li>').join('')+'</ul>';
+  box.innerHTML='<summary>休止・取得不可チャンネル（'+r.length+'ch）</summary><ul>'
+    +r.map(x=>'<li>'+esc(x.name||x.slug)+'（最終長尺投稿: '+esc(x.lastDate||'不明')+'）</li>').join('')+'</ul>';
 }
 
-/* ===== ãƒãƒ£ãƒ³ãƒãƒ«è¿½åŠ ã‚¦ã‚£ã‚¸ã‚§ãƒƒãƒˆ ===== */
+/* ===== チャンネル追加ウィジェット ===== */
 const tok=()=>localStorage.getItem('hw_gh_token')||'';
-function saveToken(){ const t=document.getElementById('tokinput').value.trim(); if(!t){setSt('ãƒˆãƒ¼ã‚¯ãƒ³ãŒç©ºã§ã™','ng');return;} localStorage.setItem('hw_gh_token',t); document.getElementById('tokinput').value=''; tokState(); setSt('ãƒˆãƒ¼ã‚¯ãƒ³ã‚’ä¿å­˜ã—ã¾ã—ãŸ','ok'); }
-function clearToken(){ localStorage.removeItem('hw_gh_token'); tokState(); setSt('ãƒˆãƒ¼ã‚¯ãƒ³ã‚’å‰Šé™¤ã—ã¾ã—ãŸ','ok'); }
-function tokState(){ document.getElementById('tokstate').textContent=tok()?'ç™»éŒ²çŠ¶æ…‹: ç™»éŒ²æ¸ˆã¿':'ç™»éŒ²çŠ¶æ…‹: æœªç™»éŒ²'; }
+function saveToken(){ const t=document.getElementById('tokinput').value.trim(); if(!t){setSt('トークンが空です','ng');return;} localStorage.setItem('hw_gh_token',t); document.getElementById('tokinput').value=''; tokState(); setSt('トークンを保存しました','ok'); }
+function clearToken(){ localStorage.removeItem('hw_gh_token'); tokState(); setSt('トークンを削除しました','ok'); }
+function tokState(){ document.getElementById('tokstate').textContent=tok()?'登録状態: 登録済み':'登録状態: 未登録'; }
 function setSt(msg,cls){ const el=document.getElementById('addstatus'); el.textContent=msg; el.className='addstatus '+(cls||''); }
 function normUrl(s){
   s=s.trim();
@@ -199,7 +199,7 @@ function normUrl(s){
 async function getPending(){
   const r=await fetch(API+PENDING+'?ref=main&ts='+Date.now(),{headers:tok()?{Authorization:'Bearer '+tok()}:{}});
   if(r.status===404) return {sha:null,data:{pending:[]}};
-  if(!r.ok) throw new Error('å–å¾—å¤±æ•— HTTP '+r.status);
+  if(!r.ok) throw new Error('取得失敗 HTTP '+r.status);
   const j=await r.json();
   return {sha:j.sha,data:JSON.parse(decodeURIComponent(escape(atob(j.content.replace(/\n/g,'')))))};
 }
@@ -207,31 +207,31 @@ async function putPending(p){
   const body={message:'update pending channels via widget',content:btoa(unescape(encodeURIComponent(JSON.stringify(p.data,null,1)))),branch:'main'};
   if(p.sha) body.sha=p.sha;
   const r=await fetch(API+PENDING,{method:'PUT',headers:{Authorization:'Bearer '+tok(),Accept:'application/vnd.github+json'},body:JSON.stringify(body)});
-  if(!r.ok) throw new Error('æ›¸ãè¾¼ã¿å¤±æ•— HTTP '+r.status+(r.status===401||r.status===403?'ï¼ˆãƒˆãƒ¼ã‚¯ãƒ³ã‚’ç¢ºèªã—ã¦ãã ã•ã„ï¼‰':''));
+  if(!r.ok) throw new Error('書き込み失敗 HTTP '+r.status+(r.status===401||r.status===403?'（トークンを確認してください）':''));
 }
 async function addChannel(){
   const raw=document.getElementById('addurl').value;
   const url=normUrl(raw);
-  if(!url){ setSt('YouTubeã®URLãƒ»@ãƒãƒ³ãƒ‰ãƒ«ã¨ã—ã¦èªè­˜ã§ãã¾ã›ã‚“ã§ã—ãŸ','ng'); return; }
-  if(!tok()){ document.getElementById('tokpanel').classList.add('show'); tokState(); setSt('åˆå›žã¯ãƒˆãƒ¼ã‚¯ãƒ³ã®ç™»éŒ²ãŒå¿…è¦ã§ã™ï¼ˆâš™è¨­å®šï¼‰','ng'); return; }
-  setSt('è¿½åŠ ä¸­â€¦','');
+  if(!url){ setSt('YouTubeのURL・@ハンドルとして認識できませんでした','ng'); return; }
+  if(!tok()){ document.getElementById('tokpanel').classList.add('show'); tokState(); setSt('初回はトークンの登録が必要です（⚙設定）','ng'); return; }
+  setSt('追加中…','');
   try{
     const p=await getPending();
-    if(p.data.pending.some(x=>x.url===url)){ setSt('ã™ã§ã«è¿½åŠ å¾…ã¡ã«å…¥ã£ã¦ã„ã¾ã™','ng'); return; }
+    if(p.data.pending.some(x=>x.url===url)){ setSt('すでに追加待ちに入っています','ng'); return; }
     p.data.pending.push({url:url,added:new Date().toISOString().slice(0,10)});
     await putPending(p);
     document.getElementById('addurl').value='';
-    setSt('è¿½åŠ ã—ã¾ã—ãŸã€‚æ¬¡å›žã®é€±æ¬¡å·¡å›žã‹ã‚‰ç›£è¦–å¯¾è±¡ã«ãªã‚Šã¾ã™','ok');
+    setSt('追加しました。次回の週次巡回から監視対象になります','ok');
     renderPending(p.data.pending);
-  }catch(e){ setSt('ã‚¨ãƒ©ãƒ¼: '+e.message,'ng'); }
+  }catch(e){ setSt('エラー: '+e.message,'ng'); }
 }
 async function removePending(url){
-  try{ const p=await getPending(); p.data.pending=p.data.pending.filter(x=>x.url!==url); await putPending(p); renderPending(p.data.pending); setSt('å–ã‚Šæ¶ˆã—ã¾ã—ãŸ','ok'); }
-  catch(e){ setSt('ã‚¨ãƒ©ãƒ¼: '+e.message,'ng'); }
+  try{ const p=await getPending(); p.data.pending=p.data.pending.filter(x=>x.url!==url); await putPending(p); renderPending(p.data.pending); setSt('取り消しました','ok'); }
+  catch(e){ setSt('エラー: '+e.message,'ng'); }
 }
 async function loadPending(){ try{ const p=await getPending(); renderPending(p.data.pending); }catch(e){} }
 function renderPending(list){
-  document.getElementById('pendlist').innerHTML=(list||[]).map(x=>'<div class="pend"><span>'+esc(x.url)+'</span><b onclick="removePending(\''+esc(x.url)+'\')">Ã—</b></div>').join('');
+  document.getElementById('pendlist').innerHTML=(list||[]).map(x=>'<div class="pend"><span>'+esc(x.url)+'</span><b onclick="removePending(\''+esc(x.url)+'\')">×</b></div>').join('');
 }
 tokState(); load();
 </script>
