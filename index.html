@@ -86,7 +86,7 @@ details.removed li{margin-left:20px}
     <button class="gear" onclick="document.getElementById('tokpanel').classList.toggle('show')">&#9881; 設定</button>
   </div>
   <div class="addstatus" id="addstatus"></div>
-  <div class="addhint">ここに追加したチャンネルは、次回の週次巡回（毎週月曜朝）から自動的に監視対象になります。不要なチャンネルは各チャンネル名の右の「削除」ボタンから外せます。</div>
+  <div class="addhint">追加ボタンを押すと、貼ったURL（チャンネル・@ハンドル・動画のどれでも）からチャンネルを特定し、すでに監視中／追加待ちでないかを自動チェックします。重複していなければ次回の週次巡回（毎週月曜）から監視対象になります。不要なチャンネルは各チャンネル名の右の「削除」ボタンから外せます。</div>
   <div class="pendlist" id="pendlist"></div>
   <div class="tokpanel" id="tokpanel">
     <div class="note">初回のみ: GitHubトークン（hit-watch-updater）を登録してください。このブラウザ内にのみ保存されます。</div>
@@ -96,6 +96,13 @@ details.removed li{margin-left:20px}
       <button class="gear" onclick="clearToken()">削除</button>
     </div>
     <div class="note" id="tokstate"></div>
+    <div class="note" style="margin-top:12px">重複チェック用: YouTube Data APIキー（貼ったURLからチャンネルを特定して、すでに監視中かどうかを判定します）。このブラウザ内にのみ保存されます。</div>
+    <input type="password" id="ytinput" placeholder="AIza...">
+    <div class="addrow">
+      <button onclick="saveYt()">APIキーを保存</button>
+      <button class="gear" onclick="clearYt()">削除</button>
+    </div>
+    <div class="note" id="ytstate"></div>
   </div>
 </div>
 
@@ -122,6 +129,17 @@ details.removed li{margin-left:20px}
     <div class="mrow">
       <button class="mcancel" onclick="closeDel()">キャンセル</button>
       <button class="mdel" id="delgo" onclick="doDelete()">削除する</button>
+    </div>
+  </div>
+</div>
+
+<div class="modal" id="readdmodal" onclick="if(event.target===this)closeReadd()">
+  <div class="mbox">
+    <h2 id="readdtitle">以前削除したチャンネルです。再追加しますか？</h2>
+    <p>このチャンネルは過去に監視対象から削除されています。再追加すると、次回の週次巡回でウォッチに復活します。</p>
+    <div class="mrow">
+      <button class="mcancel" onclick="closeReadd()">キャンセル</button>
+      <button class="mdel" id="readdgo" style="background:var(--acc)" onclick="doReadd()">再追加する</button>
     </div>
   </div>
 </div>
@@ -294,6 +312,67 @@ function saveToken(){ const t=document.getElementById('tokinput').value.trim(); 
 function clearToken(){ localStorage.removeItem('hw_gh_token'); tokState(); setSt('トークンを削除しました','ok'); }
 function tokState(){ document.getElementById('tokstate').textContent=tok()?'登録状態: 登録済み':'登録状態: 未登録'; }
 function setSt(msg,cls){ const el=document.getElementById('addstatus'); el.textContent=msg; el.className='addstatus '+(cls||''); }
+/* YouTube APIキー（重複チェック用） */
+const ytkey=()=>localStorage.getItem('hw_yt_key')||'';
+function saveYt(){ const t=document.getElementById('ytinput').value.trim(); if(!t){setSt('APIキーが空です','ng');return;} localStorage.setItem('hw_yt_key',t); document.getElementById('ytinput').value=''; ytState(); setSt('YouTube APIキーを保存しました','ok'); }
+function clearYt(){ localStorage.removeItem('hw_yt_key'); ytState(); setSt('YouTube APIキーを削除しました','ok'); }
+function ytState(){ document.getElementById('ytstate').textContent=ytkey()?'登録状態: 登録済み':'登録状態: 未登録（重複チェックに必要です）'; }
+
+/* ===== 貼られた文字列 → チャンネル(UC…) を特定 ===== */
+function parseTarget(url){
+  let u; try{ u=new URL(url); }catch(e){ return null; }
+  const host=u.hostname.replace(/^www\.|^m\./,'');
+  if(host==='youtu.be'){ const id=u.pathname.split('/').filter(Boolean)[0]; return id?{kind:'video',value:id}:null; }
+  const v=u.searchParams.get('v'); if(v) return {kind:'video',value:v};
+  const seg=u.pathname.split('/').filter(Boolean).map(s=>decodeURIComponent(s));
+  if(!seg.length) return null;
+  if(seg[0]==='channel'&&seg[1]) return {kind:'uc',value:seg[1]};
+  if(seg[0].charAt(0)==='@') return {kind:'handle',value:seg[0]};
+  if((seg[0]==='shorts'||seg[0]==='live'||seg[0]==='embed'||seg[0]==='v')&&seg[1]) return {kind:'video',value:seg[1]};
+  if(seg[0]==='user'&&seg[1]) return {kind:'user',value:seg[1]};
+  if(seg[0]==='c'&&seg[1]) return {kind:'custom',value:seg[1]};
+  if(seg[0]==='watch'||seg[0]==='results'||seg[0]==='playlist'||seg[0]==='feed') return null;
+  return {kind:'custom',value:seg[0]};
+}
+async function ytFetch(path){
+  const r=await fetch('https://www.googleapis.com/youtube/v3/'+path+'&key='+encodeURIComponent(ytkey()),{cache:'no-store'});
+  if(!r.ok){ let m=''; try{ const j=await r.json(); m=(j.error&&j.error.message)||''; }catch(e){} throw new Error('YouTube API HTTP '+r.status+(m?'（'+m+'）':'')); }
+  return r.json();
+}
+async function searchChannel(q){
+  const j=await ytFetch('search?part=snippet&type=channel&maxResults=1&q='+encodeURIComponent(q));
+  const it=(j.items||[])[0];
+  const uc=it&&((it.id&&it.id.channelId)||(it.snippet&&it.snippet.channelId));
+  if(!uc) throw new Error('チャンネルを特定できませんでした（URLを確認してください）');
+  return {uc:uc,title:it.snippet.title};
+}
+async function resolveChannel(url){
+  const t=parseTarget(url);
+  if(!t) throw new Error('YouTubeのチャンネル／動画のURLとして認識できませんでした');
+  if(t.kind==='uc'&&/^UC[\w\-]{22}$/.test(t.value)&&!ytkey()) return {uc:t.value,title:null};
+  if(!ytkey()){ document.getElementById('tokpanel').classList.add('show'); throw new Error('重複チェックにYouTube APIキーが必要です（⚙設定に登録してください）'); }
+  if(t.kind==='uc'){
+    const j=await ytFetch('channels?part=snippet&id='+encodeURIComponent(t.value));
+    const it=(j.items||[])[0]; if(!it) throw new Error('チャンネルが見つかりませんでした');
+    return {uc:it.id,title:it.snippet.title};
+  }
+  if(t.kind==='video'){
+    const j=await ytFetch('videos?part=snippet&id='+encodeURIComponent(t.value));
+    const it=(j.items||[])[0]; if(!it) throw new Error('動画が見つかりませんでした（URLを確認してください）');
+    return {uc:it.snippet.channelId,title:it.snippet.channelTitle};
+  }
+  if(t.kind==='handle'){
+    const j=await ytFetch('channels?part=snippet&forHandle='+encodeURIComponent(t.value));
+    const it=(j.items||[])[0]; if(it) return {uc:it.id,title:it.snippet.title};
+    return searchChannel(t.value);
+  }
+  if(t.kind==='user'){
+    const j=await ytFetch('channels?part=snippet&forUsername='+encodeURIComponent(t.value));
+    const it=(j.items||[])[0]; if(it) return {uc:it.id,title:it.snippet.title};
+    return searchChannel(t.value);
+  }
+  return searchChannel(t.value);
+}
 function normUrl(s){
   s=s.trim();
   if(!s) return null;
@@ -309,21 +388,55 @@ async function getPending(){
 async function putPending(p){
   await ghPut(PENDING,p.data,p.sha,'update pending channels via widget',true);
 }
+let readdCtx=null;
 async function addChannel(){
   const raw=document.getElementById('addurl').value;
   const url=normUrl(raw);
   if(!url){ setSt('YouTubeのURL・@ハンドルとして認識できませんでした','ng'); return; }
-  if(!tok()){ document.getElementById('tokpanel').classList.add('show'); tokState(); setSt('初回はトークンの登録が必要です（⚙設定）','ng'); return; }
-  setSt('追加中…','');
+  if(!tok()){ document.getElementById('tokpanel').classList.add('show'); tokState(); ytState(); setSt('初回はトークンの登録が必要です（⚙設定）','ng'); return; }
+  setSt('チャンネルを確認中…','');
   try{
+    /* ① 貼られたURL（チャンネル／@ハンドル／動画のいずれでも）からチャンネルを特定 */
+    const ch=await resolveChannel(url);
+    const nm=ch.title?'「'+ch.title+'」':'このチャンネル';
+    /* ② すでに監視中のチャンネルと重複していないか */
+    const exist=(D&&D.channels||[]).find(x=>x.uc===ch.uc);
+    if(exist){ setSt('⚠ すでに監視中です：「'+exist.title+'」（登録 '+num(exist.subs)+'人）— 追加は不要です','ng'); return; }
+    const rmv=(D&&D.removed||[]).find(x=>x.uc===ch.uc);
+    if(rmv){ setSt('⚠ すでに監視対象に入っています（休止・取得不可として表示中）：「'+(rmv.name||rmv.slug||'')+'」','ng'); return; }
+    /* ③ すでに追加待ちに入っていないか */
     const p=await getPending();
-    if(p.data.pending.some(x=>x.url===url)){ setSt('すでに追加待ちに入っています','ng'); return; }
-    p.data.pending.push({url:url,added:new Date().toISOString().slice(0,10)});
-    await putPending(p);
-    document.getElementById('addurl').value='';
-    setSt('追加しました。次回の週次巡回から監視対象になります','ok');
-    renderPending(p.data.pending);
+    const pend=(p.data.pending||[]).find(x=>(x.uc&&x.uc===ch.uc)||x.url===url);
+    if(pend){ setSt('⚠ '+nm+'はすでに追加待ちに入っています（次回の週次巡回で監視対象になります）','ng'); return; }
+    /* ④ 過去に削除したチャンネルなら確認ダイアログ */
+    const rm=await ghGet(REMOVED);
+    const rmlist=(rm.data&&rm.data.removed)||[];
+    const gone=rmlist.find(x=>x.uc===ch.uc);
+    if(gone){
+      readdCtx={url:url,ch:ch,p:p};
+      document.getElementById('readdtitle').textContent='「'+(ch.title||gone.title||'このチャンネル')+'」は以前削除しました。再追加しますか？';
+      document.getElementById('readdmodal').classList.add('show');
+      setSt('','');
+      return;
+    }
+    await commitAdd(url,ch,p);
   }catch(e){ setSt('エラー: '+e.message,'ng'); }
+}
+async function commitAdd(url,ch,p){
+  p.data.pending.push({url:url,uc:ch.uc,title:ch.title||null,added:new Date().toISOString().slice(0,10)});
+  await putPending(p);
+  document.getElementById('addurl').value='';
+  setSt('✓ 追加しました'+(ch.title?'：「'+ch.title+'」':'')+'。次回の週次巡回から監視対象になります','ok');
+  renderPending(p.data.pending);
+}
+function closeReadd(){ readdCtx=null; document.getElementById('readdmodal').classList.remove('show'); }
+async function doReadd(){
+  if(!readdCtx) return;
+  const c=readdCtx, b=document.getElementById('readdgo');
+  b.disabled=true; b.textContent='追加中…';
+  try{ await commitAdd(c.url,c.ch,c.p); closeReadd(); }
+  catch(e){ setSt('エラー: '+e.message,'ng'); closeReadd(); }
+  finally{ b.disabled=false; b.textContent='再追加する'; }
 }
 async function removePending(url){
   try{ const p=await getPending(); p.data.pending=p.data.pending.filter(x=>x.url!==url); await putPending(p); renderPending(p.data.pending); setSt('取り消しました','ok'); }
@@ -331,9 +444,9 @@ async function removePending(url){
 }
 async function loadPending(){ try{ const p=await getPending(); renderPending(p.data.pending); }catch(e){} }
 function renderPending(list){
-  document.getElementById('pendlist').innerHTML=(list||[]).map(x=>'<div class="pend"><span>'+esc(x.url)+'</span><b onclick="removePending(\''+esc(x.url)+'\')">×</b></div>').join('');
+  document.getElementById('pendlist').innerHTML=(list||[]).map(x=>'<div class="pend"><span>'+esc(x.title?'追加待ち: '+x.title:x.url)+'</span><b onclick="removePending(\''+esc(x.url)+'\')">×</b></div>').join('');
 }
-tokState(); load();
+tokState(); ytState(); load();
 </script>
 </body>
 </html>
