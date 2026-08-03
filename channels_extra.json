@@ -1,64 +1,82 @@
 {
- "channels": [
-  {
-   "uc": "UCIOgnwv7IOAjGf0onKlbNLw",
-   "title": "MOTOR STATION TV",
-   "added": "2026-07-13"
-  },
-  {
-   "uc": "UClZKTa1HSROOo8PtO5HIRMQ",
-   "title": "げんチャんねる",
-   "added": "2026-07-13"
-  },
-  {
-   "uc": "UCISlrdwmrd8a4luLBd8IHRw",
-   "title": "ふみっちょドライビング",
-   "added": "2026-07-13"
-  },
-  {
-   "uc": "UCkQ7TqHKqOp4vgae27KiZFw",
-   "title": "ヤマモト店長のモトブログ",
-   "added": "2026-07-13"
-  },
-  {
-   "uc": "UC2l0NQVm-kyM49oin9f-VYg",
-   "title": "海 umi",
-   "added": "2026-07-13"
-  },
-  {
-   "uc": "UCyOAr0OLA3uLaES53I_m1MA",
-   "title": "ペンたろうバイクラジオ",
-   "added": "2026-07-13"
-  },
-  {
-   "uc": "UCYJmupOS3TzOzydoJIOenIg",
-   "title": "いわもと社長【ROCKBOOK】",
-   "url": "https://www.youtube.com/@RCBK",
-   "added": "2026-07-25"
-  },
-  {
-   "uc": "UCEgvzVCeW2MnHV-M62CxBDQ",
-   "title": "チャンネル隊長",
-   "url": "https://www.youtube.com/@CHT0213",
-   "added": "2026-07-25"
-  },
-  {
-   "uc": "UCwJmA4XEl8Kqo8tLoNkGpnQ",
-   "title": "ヒデさん / hide-san",
-   "url": "https://www.youtube.com/@hide-san",
-   "added": "2026-07-25"
-  },
-  {
-   "uc": "UCsHXJTbkithQPxeHhANtCTg",
-   "title": "リスキー / RESKY",
-   "url": "https://www.youtube.com/@resky_ch",
-   "added": "2026-07-25"
-  },
-  {
-   "uc": "UCs2c5TU1fdMV7d6xC11mw_A",
-   "title": "【公式】ふじワークス",
-   "url": "https://www.youtube.com/@Fuji_Works/videos",
-   "added": "2026-07-25"
-  }
- ]
+  "channels": [
+    {
+      "uc": "UCIOgnwv7IOAjGf0onKlbNLw",
+      "title": "MOTOR STATION TV",
+      "added": "2026-07-13"
+    },
+    {
+      "uc": "UClZKTa1HSROOo8PtO5HIRMQ",
+      "title": "げんチャんねる",
+      "added": "2026-07-13"
+    },
+    {
+      "uc": "UCISlrdwmrd8a4luLBd8IHRw",
+      "title": "ふみっちょドライビング",
+      "added": "2026-07-13"
+    },
+    {
+      "uc": "UCkQ7TqHKqOp4vgae27KiZFw",
+      "title": "ヤマモト店長のモトブログ",
+      "added": "2026-07-13"
+    },
+    {
+      "uc": "UC2l0NQVm-kyM49oin9f-VYg",
+      "title": "海 umi",
+      "added": "2026-07-13"
+    },
+    {
+      "uc": "UCyOAr0OLA3uLaES53I_m1MA",
+      "title": "ペンたろうバイクラジオ",
+      "added": "2026-07-13"
+    },
+    {
+      "uc": "UCYJmupOS3TzOzydoJIOenIg",
+      "title": "いわもと社長【ROCKBOOK】",
+      "url": "https://www.youtube.com/@RCBK",
+      "added": "2026-07-25"
+    },
+    {
+      "uc": "UCEgvzVCeW2MnHV-M62CxBDQ",
+      "title": "チャンネル隊長",
+      "url": "https://www.youtube.com/@CHT0213",
+      "added": "2026-07-25"
+    },
+    {
+      "uc": "UCwJmA4XEl8Kqo8tLoNkGpnQ",
+      "title": "ヒデさん / hide-san",
+      "url": "https://www.youtube.com/@hide-san",
+      "added": "2026-07-25"
+    },
+    {
+      "uc": "UCsHXJTbkithQPxeHhANtCTg",
+      "title": "リスキー / RESKY",
+      "url": "https://www.youtube.com/@resky_ch",
+      "added": "2026-07-25"
+    },
+    {
+      "uc": "UCs2c5TU1fdMV7d6xC11mw_A",
+      "title": "【公式】ふじワークス",
+      "url": "https://www.youtube.com/@Fuji_Works/videos",
+      "added": "2026-07-25"
+    },
+    {
+      "added": "2026-08-01",
+      "title": "MOON BASE",
+      "uc": "UCO-dIqPvmD7GCGATlTND2Yw",
+      "url": "https://www.youtube.com/@MOON_BASE"
+    },
+    {
+      "added": "2026-08-02",
+      "title": "みやのニハリ（second tune） ",
+      "uc": "UCrwKoDOZC2-4W2rB8g0J3DA",
+      "url": "https://www.youtube.com/@secondtune2845"
+    },
+    {
+      "added": "2026-08-03",
+      "title": "PON channel",
+      "uc": "UCv3BI65XLy7YENbtQv6XbPg",
+      "url": "https://www.youtube.com/@PON._.channel"
+    }
+  ]
 }
