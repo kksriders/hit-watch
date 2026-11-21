@@ -1,6 +1,6 @@
 {
  "meta": {
-  "date": "2026-11-16",
+  "date": "2026-11-21",
   "allDate": "2026-09-13",
   "cutoff365": "2025-11-21",
   "cutoff": "6ヶ月前",
@@ -25244,70 +25244,70 @@
    "slug": "UCWJH8FXPPFqnVYXHooTXbaQ",
    "title": "カナイのモビリティ日和 [Kanai’s Mobility Days] Type R🚗 &🏍️",
    "icon": "https://yt3.ggpht.com/b7T-qbgQ8E_RR1wyQkJeN3JwWRChi8vuo30YpjK45i7p8YWAmxCLbtBNcn7252fWb4Gj17Af1pM=s88-c-k-c0x00ffffff-no-rj",
-   "subs": 16000,
-   "median": 10086,
+   "subs": 16400,
+   "median": 10151,
    "lastDate": "2026-11-14",
-   "upd": "2026-11-16",
+   "upd": "2026-11-21",
    "top10_year": [
+    {
+     "id": "TIM0GIr_g2Y",
+     "t": "【最強】ワークマンなら極寒でも余裕すぎる？！奇跡の新素材",
+     "d": "2026-11-14",
+     "v": 393463
+    },
     {
      "id": "7yI47Wfb3mA",
      "t": "【待望】新型CB400SF E-Clutchに乗ってきました、新型CBR400もあるよ！",
      "d": "2026-08-07",
-     "v": 189068
+     "v": 189915
     },
     {
      "id": "xk8q_NVANac",
      "t": "シビック TYPE R（FL5）を本音レビュー｜普段使い・維持費・弱点まで正直に話します",
      "d": "2026-03-21",
-     "v": 72412
+     "v": 73301
     },
     {
      "id": "EYu6GzFs5wg",
      "t": "【知らないと損】実はほとんどの人が勘違いしているHonda E-Clutch",
      "d": "2026-07-03",
-     "v": 48775
+     "v": 49819
     },
     {
      "id": "eTpwbzXaLaU",
      "t": "初手洗い洗車！純水すごいぞ？Civic Type Rをプロに教わって洗った結果…｜D-Wash武蔵村山",
      "d": "2026-03-14",
-     "v": 48095
+     "v": 49610
     },
     {
      "id": "vf8OWK8guQ8",
      "t": "   【保存版】ワークマン2026春夏“当たり”だけ紹介！真夏のツーリングに！",
      "d": "2026-04-25",
-     "v": 45669
+     "v": 45699
     },
     {
      "id": "V6H652EZVks",
      "t": "【大物ゲストも？！】シビックタイプRミーティング潜入記！",
      "d": "2026-08-28",
-     "v": 33684
-    },
-    {
-     "id": "TIM0GIr_g2Y",
-     "t": "【最強】ワークマンなら極寒でも余裕すぎる？！奇跡の新素材",
-     "d": "2026-11-14",
-     "v": 27405
+     "v": 33824
     },
     {
      "id": "3jV4BxQnprQ",
      "t": "【ホンダ】CB400スーフォア復活!? しかもCBRも直4!? Hondaがヤバい2台を出してきた 【コンセプト車両】",
      "d": "2026-04-10",
-     "v": 27076
+     "v": 27152
     },
     {
      "id": "-mBKz0eTlpY",
      "t": "【納車理由】バイク女子、シビックタイプR納車の裏側｜平嶋夏海MCで女子トーク",
      "d": "2026-01-24",
-     "v": 26383
+     "v": 26510
     },
     {
      "id": "yMBiqTJQb7Q",
      "t": "10年フルローンのシビックタイプR、実は購入時一苦労ありました。｜クラウドローン",
      "d": "2026-09-04",
-     "v": 26217
+     "v": 26397
     }
    ],
    "top10_all": [
@@ -25372,7 +25372,32 @@
      "v": 32188
     }
    ],
-   "updAll": "2026-11-16"
+   "recent30": [
+    {
+     "id": "TIM0GIr_g2Y",
+     "t": "【最強】ワークマンなら極寒でも余裕すぎる？！奇跡の新素材",
+     "d": "2026-11-14",
+     "v": 393463
+    },
+    {
+     "id": "L5xaXFtavXU",
+     "t": "【知らないと損】レース観戦するならここ！モビリティリゾートもてぎのビクトリーコーナーデッキ｜MotoGP",
+     "d": "2026-10-23",
+     "v": 11495
+    },
+    {
+     "id": "gAuJkkZmpeA",
+     "t": "居心地よすぎるバイクディーラー！｜トライアンフ所沢",
+     "d": "2026-11-07",
+     "v": 8182
+    },
+    {
+     "id": "AC2JCE8sWE8",
+     "t": "【新素材】ワークマン2026秋の新作は快適性に特化！その名は「着る断熱材シグマ」？！",
+     "d": "2026-10-31",
+     "v": 7878
+    }
+   ]
   }
  ],
  "removed": [
@@ -26693,6 +26718,18 @@
    "stk": 6.31
   },
   {
+   "uc": "UCWJH8FXPPFqnVYXHooTXbaQ",
+   "title": "カナイのモビリティ日和 [Kanai’s Mobility Days] Type R🚗 &🏍️",
+   "icon": "https://yt3.ggpht.com/b7T-qbgQ8E_RR1wyQkJeN3JwWRChi8vuo30YpjK45i7p8YWAmxCLbtBNcn7252fWb4Gj17Af1pM=s88-c-k-c0x00ffffff-no-rj",
+   "subs": 16400,
+   "id": "TIM0GIr_g2Y",
+   "t": "【最強】ワークマンなら極寒でも余裕すぎる？！奇跡の新素材",
+   "d": "2026-11-14",
+   "v": 393463,
+   "st": 23.99,
+   "stk": 38.76
+  },
+  {
    "uc": "UCk4CP5Q0FPgK_TdUdkC1R3Q",
    "title": "ソエジマックスのモトブログ",
    "icon": "https://yt3.ggpht.com/N1dHkeWbmkKSq8eL3_Sm2ewQXUqMZpGj4zbiBPMesriy0a6H3bBb5yR0fqvD1GLXMepsJlHl=s88-c-k-c0x00ffffff-no-rj",
@@ -27557,6 +27594,18 @@
    "stk": 7.28
   },
   {
+   "uc": "UCWJH8FXPPFqnVYXHooTXbaQ",
+   "title": "カナイのモビリティ日和 [Kanai’s Mobility Days] Type R🚗 &🏍️",
+   "icon": "https://yt3.ggpht.com/b7T-qbgQ8E_RR1wyQkJeN3JwWRChi8vuo30YpjK45i7p8YWAmxCLbtBNcn7252fWb4Gj17Af1pM=s88-c-k-c0x00ffffff-no-rj",
+   "subs": 16400,
+   "id": "7yI47Wfb3mA",
+   "t": "【待望】新型CB400SF E-Clutchに乗ってきました、新型CBR400もあるよ！",
+   "d": "2026-08-07",
+   "v": 189915,
+   "st": 11.58,
+   "stk": 18.71
+  },
+  {
    "uc": "UCk4CP5Q0FPgK_TdUdkC1R3Q",
    "title": "ソエジマックスのモトブログ",
    "icon": "https://yt3.ggpht.com/N1dHkeWbmkKSq8eL3_Sm2ewQXUqMZpGj4zbiBPMesriy0a6H3bBb5yR0fqvD1GLXMepsJlHl=s88-c-k-c0x00ffffff-no-rj",
@@ -27567,18 +27616,6 @@
    "v": 189526,
    "st": 1.39,
    "stk": 7.06
-  },
-  {
-   "uc": "UCWJH8FXPPFqnVYXHooTXbaQ",
-   "title": "カナイのモビリティ日和 [Kanai’s Mobility Days] Type R🚗 &🏍️",
-   "icon": "https://yt3.ggpht.com/b7T-qbgQ8E_RR1wyQkJeN3JwWRChi8vuo30YpjK45i7p8YWAmxCLbtBNcn7252fWb4Gj17Af1pM=s88-c-k-c0x00ffffff-no-rj",
-   "subs": 16000,
-   "id": "7yI47Wfb3mA",
-   "t": "【待望】新型CB400SF E-Clutchに乗ってきました、新型CBR400もあるよ！",
-   "d": "2026-08-07",
-   "v": 189068,
-   "st": 11.82,
-   "stk": 18.75
   },
   {
    "uc": "UCYJmupOS3TzOzydoJIOenIg",
@@ -29093,6 +29130,18 @@
    "stk": 7.0
   },
   {
+   "uc": "UCWJH8FXPPFqnVYXHooTXbaQ",
+   "title": "カナイのモビリティ日和 [Kanai’s Mobility Days] Type R🚗 &🏍️",
+   "icon": "https://yt3.ggpht.com/b7T-qbgQ8E_RR1wyQkJeN3JwWRChi8vuo30YpjK45i7p8YWAmxCLbtBNcn7252fWb4Gj17Af1pM=s88-c-k-c0x00ffffff-no-rj",
+   "subs": 16400,
+   "id": "xk8q_NVANac",
+   "t": "シビック TYPE R（FL5）を本音レビュー｜普段使い・維持費・弱点まで正直に話します",
+   "d": "2026-03-21",
+   "v": 73301,
+   "st": 4.47,
+   "stk": 7.22
+  },
+  {
    "uc": "UCO-dIqPvmD7GCGATlTND2Yw",
    "title": "MOON BASE",
    "icon": "https://yt3.ggpht.com/RyyBsbw3vDSzswvC1v_uPZKXWo58MvdBHBUOi3t6ho2QYgpvf8vZ9jUMolhaLPVNuKHKLLTQXo4=s88-c-k-c0x00ffffff-no-rj",
@@ -29103,18 +29152,6 @@
    "v": 73040,
    "st": 9.2,
    "stk": 11.17
-  },
-  {
-   "uc": "UCWJH8FXPPFqnVYXHooTXbaQ",
-   "title": "カナイのモビリティ日和 [Kanai’s Mobility Days] Type R🚗 &🏍️",
-   "icon": "https://yt3.ggpht.com/b7T-qbgQ8E_RR1wyQkJeN3JwWRChi8vuo30YpjK45i7p8YWAmxCLbtBNcn7252fWb4Gj17Af1pM=s88-c-k-c0x00ffffff-no-rj",
-   "subs": 16000,
-   "id": "xk8q_NVANac",
-   "t": "シビック TYPE R（FL5）を本音レビュー｜普段使い・維持費・弱点まで正直に話します",
-   "d": "2026-03-21",
-   "v": 72412,
-   "st": 4.53,
-   "stk": 7.18
   },
   {
    "uc": "UCIHjP4PVsWNcv9RuTmoOhIg",
