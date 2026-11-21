@@ -54,6 +54,8 @@ h1{font-size:20px;margin-bottom:4px}
 .vstats{color:var(--tx2);font-size:11px;margin-top:4px;display:flex;gap:6px;flex-wrap:wrap;align-items:center}
 .rankn{display:inline-block;background:var(--acc);color:#fff;border-radius:4px;font-size:11px;padding:0 6px;margin-right:4px}
 .stbadge{background:var(--hit);color:#000;border-radius:4px;font-size:10px;padding:0 5px;font-weight:600}
+.stbadge.sub{background:var(--card);color:var(--tx2);font-weight:400}
+.stale{color:#f87171;font-weight:600}
 .empty{color:var(--tx2);font-size:12px;padding:8px 0}
 .hitrow{display:flex;align-items:center;gap:6px;color:var(--tx2);font-size:11px;margin-top:4px}
 .hitrow img{width:18px;height:18px;border-radius:50%}
@@ -107,15 +109,10 @@ details.removed li{margin-left:20px}
 </div>
 
 <div class="tabs">
-  <div class="tab" data-v="stk" onclick="setTab(this)">拡散率ランキング</div>
-  <div class="tab" data-v="new" onclick="setTab(this)">新しい順</div>
-  <div class="tab on" data-v="year" onclick="setTab(this)">直近1年トップ10</div>
-  <div class="tab" data-v="all" onclick="setTab(this)">各ch歴代トップ10</div>
+  <div class="tab on" data-v="rank" onclick="setTab(this)">拡散率ランキング（全ch）</div>
+  <div class="tab" data-v="ch" onclick="setTab(this)">チャンネル別トップ10</div>
 </div>
-<div class="chips" id="chips">
-  <div class="chip on" data-days="365" onclick="setDays(this)">直近1年</div>
-  <div class="chip" data-days="30" onclick="setDays(this)">直近30日</div>
-</div>
+<div class="chips show" id="chips"></div>
 <input id="q" placeholder="チャンネル・タイトルで絞り込み…" oninput="render()">
 <div class="desc" id="desc"></div>
 <div id="view"></div>
@@ -148,7 +145,7 @@ details.removed li{margin-left:20px}
 const OWNER='kksriders', REPO='hit-watch', PENDING='pending_channels.json', REMOVED='removed_channels.json', EXTRA='channels_extra.json';
 const API='https://api.github.com/repos/'+OWNER+'/'+REPO+'/contents/';
 const APIROOT='https://api.github.com/repos/'+OWNER+'/'+REPO+'/';
-let D=null, TAB='year', DAYS=365;
+let D=null, TAB='rank', PER={rank:'30',ch:'365'};
 const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const num=n=>Number(n||0).toLocaleString('ja-JP');
 const yurl=id=>'https://www.youtube.com/watch?v='+id;
@@ -163,62 +160,91 @@ async function load(){
 }
 function setMeta(){
   const m=D.meta||{};
-  document.getElementById('meta').textContent='最終更新 '+(m.date||'?')+'／監視 '+D.channels.length+'ch（5分未満の動画は除外・長尺のみ）／ヒット定義: ST≧5 または STK≧5'+(m.cutoff365?('／直近1年=公開日'+m.cutoff365+'以降'):'');
+  const age=m.date?Math.floor((Date.now()-new Date(m.date+'T00:00:00+09:00'))/86400000):99;
+  const warn=age>8?'<span class="stale">⚠ 更新が'+age+'日止まっています（毎週月曜に更新される設計）</span>／':'';
+  document.getElementById('meta').innerHTML=warn+'最終更新 '+esc(m.date||'?')+'（毎週月曜）／監視 '+D.channels.length+'ch（5分未満の動画は除外・長尺のみ）／ヒット定義: ST≧5 または STK≧5';
 }
+const CHIPS={rank:[['7','直近7日'],['30','直近30日'],['365','直近1年']],ch:[['7','直近7日'],['30','直近30日'],['365','直近1年'],['all','歴代']]};
 function setTab(el){ document.querySelectorAll('.tab').forEach(t=>t.classList.remove('on')); el.classList.add('on'); TAB=el.dataset.v; render(); }
-function setDays(el){ document.querySelectorAll('.chip').forEach(c=>c.classList.remove('on')); el.classList.add('on'); DAYS=+el.dataset.days; render(); }
+function setDays(el){ PER[TAB]=el.dataset.p; render(); }
+function renderChips(){
+  document.getElementById('chips').innerHTML=CHIPS[TAB].map(([p,l])=>'<div class="chip'+(PER[TAB]===p?' on':'')+'" data-p="'+p+'" onclick="setDays(this)">'+l+'</div>').join('');
+}
+/* 期間の起点は「データを取った日」(meta.date)。今日から数えると、週の後半ほど直近7日が空になるため */
+function cutoffOf(p){ const base=new Date((D.meta&&D.meta.date||'')+'T00:00:00+09:00'); base.setDate(base.getDate()-(+p)); return base.toISOString().slice(0,10); }
+const score=h=>Math.max(h.st||0,h.stk||0);
+function withSt(x,c){ return {...x,uc:c.uc,title:c.title,icon:c.icon,subs:c.subs,st:c.subs?x.v/c.subs:0,stk:c.median?x.v/c.median:0}; }
+const hasRecent=()=>D.channels.some(c=>Array.isArray(c.recent30));
 
 function render(){
   if(!D) return;
+  renderChips();
   const q=(document.getElementById('q').value||'').toLowerCase();
-  const chips=document.getElementById('chips');
-  (TAB==='stk'||TAB==='new')?chips.classList.add('show'):chips.classList.remove('show');
   const v=document.getElementById('view'), desc=document.getElementById('desc');
-  if(TAB==='year'||TAB==='all'){
-    const f=TAB==='year'?'top10_year':'top10_all';
-    desc.textContent=TAB==='year'
-      ?'各チャンネルの直近1年（公開日が365日以内）の再生数トップ10（5分以上の動画のみ）。サムネ／チャンネル名タップで開けます。'
-      :'各チャンネルの全期間の再生数トップ10（5分以上の動画のみ）。半年に1回（1/1・7/1）更新。';
+  const p=PER[TAB];
+  if(TAB==='ch'){
+    const f=p==='all'?'top10_all':p==='365'?'top10_year':'recent30';
+    const cut=(p==='7'||p==='30')?cutoffOf(p):'';
+    if(f==='recent30'&&!hasRecent()){ desc.textContent=''; v.innerHTML='<div class="empty">直近30日・7日のデータは次回の更新（月曜）から表示されます</div>'; return; }
+    desc.textContent={all:'各チャンネルの全期間の再生数トップ10。新しく追加したchは翌平日に補完、全体の取り直しは半年ごと（前回 '+((D.meta&&D.meta.allDate)||'?')+'）。',
+      '365':'各チャンネルの直近1年（'+((D.meta&&D.meta.cutoff365)||'')+'以降に公開）の再生数トップ10。',
+      '30':'各チャンネルの直近30日（'+cut+'以降に公開）の再生数トップ10。その期間に投稿の無いchは出しません。',
+      '7':'各チャンネルの直近7日（'+cut+'以降に公開）の再生数トップ10。その期間に投稿の無いchは出しません。'}[p]
+      +' 並びは登録者の多い順。バッジは拡散率（ST=再生数÷登録者数／STK=再生数÷そのchの直近20本の中央値）。';
     const chs=[...D.channels].sort((a,b)=>b.subs-a.subs);
-    let html='', rank=0;
+    let html='', rank=0, shown=0;
     for(const c of chs){
       rank++;
-      const list=Array.isArray(c[f])?c[f]:[];   // フォールバックなし: top10_year が無ければ「データなし」
+      let list=Array.isArray(c[f])?c[f]:null;   // フォールバックなし: 無ければ「データなし」
+      if(list&&cut) list=list.filter(x=>x.d>=cut).slice(0,10);
+      if(cut&&list&&!list.length) continue;      // 期間内に投稿なし
       const nameHit=(c.title||'').toLowerCase().includes(q);
-      const vids=q&&!nameHit?list.filter(x=>(x.t||'').toLowerCase().includes(q)):list;
+      const vids=q&&!nameHit?(list||[]).filter(x=>(x.t||'').toLowerCase().includes(q)):(list||[]);
       if(q&&!nameHit&&!vids.length) continue;
+      shown++;
       html+='<div class="chsec"><div class="chhead"><img src="'+esc(c.icon)+'" loading="lazy" alt="">'
         +'<div><a href="'+churl(c.uc)+'" target="_blank" rel="noopener">'+esc(c.title)+'</a>'
         +'<div class="chsub">登録 '+num(c.subs)+'人 ・ 最終投稿(横動画) '+esc(c.lastDate||'-')+'</div></div>'
         +'<div class="chrank">#'+rank+' 登録者順</div>'
         +'<button class="delbtn" title="このチャンネルを監視から削除" onclick="askDelete(\''+esc(c.uc)+'\')">&#128465; 削除</button></div>';
       if(!vids.length){ html+='<div class="empty">データなし（次回更新をお待ちください）</div></div>'; continue; }
-      html+='<div class="grid">'+vids.map((x,i)=>vcard(x,i+1)).join('')+'</div></div>';
+      html+='<div class="grid">'+vids.map((x,i)=>vcard(withSt(x,c),i+1)).join('')+'</div></div>';
     }
     v.innerHTML=html||'<div class="empty">該当なし</div>';
-  }else{
-    const cutoff=new Date(Date.now()-DAYS*86400*1000);
-    let hits=(D.hits||[]).filter(h=>new Date(h.d)>=cutoff);
-    if(q) hits=hits.filter(h=>(h.title||'').toLowerCase().includes(q)||(h.t||'').toLowerCase().includes(q));
-    for(const h of hits){ if(h.st==null)h.st=h.subs?h.v/h.subs:0; if(h.stk==null)h.stk=h.median?h.v/h.median:0; }
-    hits.sort(TAB==='stk'?(a,b)=>Math.max(b.st,b.stk)-Math.max(a.st,a.stk):(a,b)=>a.d<b.d?1:-1);
-    desc.textContent=(TAB==='stk'?'拡散率（ST=再生数÷登録者数／STK=再生数÷直近20本の中央値）の高い順。':'ヒット動画を公開日の新しい順に表示。')
-      +'対象: 公開日が直近'+(DAYS===365?'1年':'30日')+'以内のヒット動画（ST≧5 または STK≧5）。';
-    document.getElementById('view').innerHTML=hits.length
-      ?'<div class="grid">'+hits.map((h,i)=>hitcard(h,i+1)).join('')+'</div>'
-      :'<div class="empty">この期間のヒット動画はありません</div>';
+    return;
   }
+  /* 拡散率ランキング（全チャンネル横断） */
+  const cut=cutoffOf(p);
+  let pool;
+  if(p==='365'){
+    pool=(D.hits||[]).filter(h=>h.d>=cut).map(h=>({...h}));
+    const seen=new Set(pool.map(h=>h.id));      // hits は1ch20件までなので、直近30日の分は recent30 から補う
+    for(const c of D.channels) for(const x of (c.recent30||[])){ const h=withSt(x,c); if(!seen.has(h.id)&&score(h)>=5){seen.add(h.id);pool.push(h);} }
+  }else{
+    if(!hasRecent()){ desc.textContent=''; v.innerHTML='<div class="empty">直近30日・7日のランキングは次回の更新（月曜）から表示されます</div>'; return; }
+    pool=[]; for(const c of D.channels) for(const x of (c.recent30||[])) if(x.d>=cut) pool.push(withSt(x,c));
+  }
+  if(q) pool=pool.filter(h=>(h.title||'').toLowerCase().includes(q)||(h.t||'').toLowerCase().includes(q));
+  pool.sort((a,b)=>score(b)-score(a));
+  const LIMIT=60, total=pool.length; pool=pool.slice(0,LIMIT);
+  desc.textContent='全チャンネルの動画を拡散率の高い順に。拡散率＝STとSTKの大きいほう（オレンジのバッジ。ST=再生数÷登録者数／STK=再生数÷そのchの直近20本の中央値）。'
+    +'対象: '+cut+'以降に公開'+(p==='365'?'のヒット動画（ST≧5 または STK≧5）':'の全動画（再生数は '+((D.meta&&D.meta.date)||'')+' 時点）')
+    +'。'+(total>LIMIT?'上位'+LIMIT+'本／全'+total+'本。':'');
+  v.innerHTML=pool.length?'<div class="grid">'+pool.map((h,i)=>hitcard(h,i+1)).join('')+'</div>':'<div class="empty">この期間の動画はありません</div>';
+}
+function badges(h){
+  const f=n=>(Math.round(n*10)/10).toFixed(1), stMain=(h.st||0)>=(h.stk||0);
+  return '<span class="stbadge'+(stMain?'':' sub')+'">ST '+f(h.st||0)+'</span><span class="stbadge'+(stMain?' sub':'')+'">STK '+f(h.stk||0)+'</span>';
 }
 function vcard(x,n){
   return '<div class="vcard"><a href="'+yurl(x.id)+'" target="_blank" rel="noopener"><img src="'+thumb(x.id)+'" loading="lazy" alt="">'
     +'<div class="vbody"><div class="vtitle"><span class="rankn">'+n+'</span>'+esc(x.t)+'</div>'
-    +'<div class="vstats">'+num(x.v)+' 回 ・ '+esc(x.d)+'</div></div></a></div>';
+    +'<div class="vstats">'+num(x.v)+' 回 ・ '+esc(x.d)+' '+badges(x)+'</div></div></a></div>';
 }
 function hitcard(h,n){
-  const st=(Math.round(h.st*10)/10).toFixed(1), stk=(Math.round(h.stk*10)/10).toFixed(1);
   return '<div class="vcard"><a href="'+yurl(h.id)+'" target="_blank" rel="noopener"><img src="'+thumb(h.id)+'" loading="lazy" alt="">'
     +'<div class="vbody"><div class="vtitle"><span class="rankn">'+n+'</span>'+esc(h.t)+'</div>'
-    +'<div class="vstats">'+num(h.v)+' 回 ・ '+esc(h.d)+' <span class="stbadge">ST '+st+'</span><span class="stbadge">STK '+stk+'</span></div>'
+    +'<div class="vstats">'+num(h.v)+' 回 ・ '+esc(h.d)+' '+badges(h)+'</div>'
     +'<div class="hitrow"><img src="'+esc(h.icon)+'" loading="lazy" alt="">'+esc(h.title)+'（登録 '+num(h.subs)+'人）</div></div></a></div>';
 }
 function renderRemoved(){
