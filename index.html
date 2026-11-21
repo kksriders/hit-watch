@@ -171,7 +171,7 @@ function renderChips(){
   document.getElementById('chips').innerHTML=CHIPS[TAB].map(([p,l])=>'<div class="chip'+(PER[TAB]===p?' on':'')+'" data-p="'+p+'" onclick="setDays(this)">'+l+'</div>').join('');
 }
 /* 期間の起点は「データを取った日」(meta.date)。今日から数えると、週の後半ほど直近7日が空になるため */
-function cutoffOf(p){ const base=new Date((D.meta&&D.meta.date||'')+'T00:00:00+09:00'); base.setDate(base.getDate()-(+p)); return base.toISOString().slice(0,10); }
+function cutoffOf(p){ const base=new Date((D.meta&&D.meta.date||'')+'T00:00:00Z'); base.setUTCDate(base.getUTCDate()-(+p)); return base.toISOString().slice(0,10); }
 const score=h=>Math.max(h.st||0,h.stk||0);
 function withSt(x,c){ return {...x,uc:c.uc,title:c.title,icon:c.icon,subs:c.subs,st:c.subs?x.v/c.subs:0,stk:c.median?x.v/c.median:0}; }
 const hasRecent=()=>D.channels.some(c=>Array.isArray(c.recent30));
